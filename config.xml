@@ -10,3 +10,13 @@
     <name>不存在的项目</name>
     <repo>https://github.com/user/project2</repo>
 </project>
+<project>
+    <icon>assets/icon2.webp</icon>
+    <name>WallCat</name>
+    <repo>overwrite@1</repo>
+</project>
+<project>
+    <icon>assets/icon2.webp</icon>
+    <name>不存在的项目</name>
+    <repo>overwrite@2</repo>
+</project>
