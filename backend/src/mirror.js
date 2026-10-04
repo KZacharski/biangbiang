@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { loadConfig } from './config.js';
 import { fetchLatestRelease, downloadAsset } from './github.js';
+import { loadOverwrite, fileNameFromUrl } from './overwrite.js';
 
 const SEGMENT_RE = /[^A-Za-z0-9._-]/g;
 
@@ -165,6 +166,52 @@ export function createMirror({ configPath, releasesDir, store, concurrency = 4, 
     }
   }
 
+  /**
+   * Build a card from a manual entry in overwrite.xml.
+   *
+   * Nothing is fetched or downloaded: the version, the repository link and the
+   * download URLs all come straight from the file, and the download buttons
+   * point at the external URLs directly. Because there is no release, no
+   * "released at" date is set - the card simply omits it.
+   */
+  function mirrorOverwrite(project, overwriteEntries) {
+    const base = {
+      id: project.id,
+      name: project.name,
+      icon: project.iconUrl,
+      repo: null,
+      version: null,
+      releaseName: null,
+      publishedAt: null,
+      releaseUrl: null,
+      assets: [],
+      status: 'pending',
+      error: null,
+    };
+
+    const entry = overwriteEntries.get(project.overwriteId);
+    if (!entry) {
+      return {
+        ...base,
+        status: 'error',
+        error: `overwrite.xml has no <overwrite> block with <id>${project.overwriteId}</id>`,
+      };
+    }
+
+    return {
+      ...base,
+      repo: entry.repo || null,
+      releaseUrl: entry.repo || null,
+      version: entry.version || null,
+      assets: entry.files.map((url, index) => ({
+        name: fileNameFromUrl(url, index),
+        size: 0, // unknown - the frontend omits the size when it is 0
+        url,
+      })),
+      status: 'ok',
+    };
+  }
+
   async function runOnce() {
     if (running) return store.get();
     running = true;
@@ -173,9 +220,25 @@ export function createMirror({ configPath, releasesDir, store, concurrency = 4, 
       const config = loadConfig(configPath);
       const previousById = new Map((store.get().projects || []).map((project) => [project.id, project]));
 
+      // overwrite.xml is only opened when a project actually asks for it, so a
+      // GitHub-only configuration never needs the file to exist.
+      let overwriteEntries = new Map();
+      if (config.usesOverwrite) {
+        try {
+          overwriteEntries = loadOverwrite(config.overwritePath);
+          logger.log(`[mirror] overwrite.xml: ${overwriteEntries.size} manual entr(ies)`);
+        } catch (err) {
+          logger.error(`[mirror] ${err.message}`);
+        }
+      }
+
       const projects = [];
       for (const project of config.projects) {
-        projects.push(await mirrorProject(project, previousById.get(project.id)));
+        projects.push(
+          project.type === 'overwrite'
+            ? mirrorOverwrite(project, overwriteEntries)
+            : await mirrorProject(project, previousById.get(project.id)),
+        );
       }
 
       const now = new Date().toISOString();

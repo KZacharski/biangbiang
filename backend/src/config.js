@@ -31,6 +31,13 @@ function toArray(value) {
 const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
 
 /**
+ * A `<repo>` may point at GitHub, or at a manual entry in overwrite.xml using
+ * the form `overwrite@<number>`, where the number is the `<id>` of an
+ * `<overwrite>` block in that file.
+ */
+const OVERWRITE_RE = /^overwrite@(\d+)$/i;
+
+/**
  * Parse an owner/repo pair from the many URL shapes people use.
  * Supports https://github.com/o/r(.git)(/), git@github.com:o/r.git and o/r.
  */
@@ -88,7 +95,34 @@ export function loadConfig(configPath) {
   toArray(root.project).forEach((node, index) => {
     if (node === null || typeof node !== 'object') return;
 
-    const parsed = parseRepo(node.repo);
+    const repoRaw = asText(node.repo);
+    const iconRel = asText(node.icon) || '';
+    const iconUrl = iconRel ? `/media/${normalizeRel(iconRel)}` : null;
+
+    // `<repo>overwrite@N</repo>` pulls the project's details from overwrite.xml
+    // instead of GitHub. The name/icon still come from config.xml.
+    const overwrite = repoRaw.match(OVERWRITE_RE);
+    if (overwrite) {
+      const overwriteId = Number(overwrite[1]);
+      const id = `overwrite:${overwriteId}`;
+      if (seen.has(id)) return;
+      seen.add(id);
+
+      projects.push({
+        type: 'overwrite',
+        id,
+        index,
+        overwriteId,
+        name: asText(node.name) || `overwrite@${overwriteId}`,
+        repo: null, // filled in from overwrite.xml
+        releaseUrl: null,
+        iconRel,
+        iconUrl,
+      });
+      return;
+    }
+
+    const parsed = parseRepo(repoRaw);
     if (!parsed) {
       // Skip invalid entries but keep going, so one bad entry never breaks the site.
       return;
@@ -98,18 +132,16 @@ export function loadConfig(configPath) {
     if (seen.has(id)) return;
     seen.add(id);
 
-    const iconRel = asText(node.icon) || '';
-    const name = asText(node.name) || parsed.name;
-
     projects.push({
+      type: 'github',
       id,
       index,
-      name,
+      name: asText(node.name) || parsed.name,
       owner: parsed.owner,
       repoName: parsed.name,
       repo: parsed.url,
       iconRel,
-      iconUrl: iconRel ? `/media/${normalizeRel(iconRel)}` : null,
+      iconUrl,
     });
   });
 
@@ -119,6 +151,10 @@ export function loadConfig(configPath) {
     faviconPath: faviconRel ? path.resolve(dir, faviconRel) : null,
     projects,
     dir,
+    // overwrite.xml sits next to config.xml. It is only read when at least one
+    // project actually asks for it, so GitHub-only setups never need the file.
+    overwritePath: path.join(dir, 'overwrite.xml'),
+    usesOverwrite: projects.some((project) => project.type === 'overwrite'),
   };
 }
 

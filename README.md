@@ -19,6 +19,7 @@
 - **排除源码归档**——GitHub 自动附加的 `Source code (zip)` / `Source code (tar.gz)` 永远不会被镜像。
 - **每 24 小时检查一次更新**（可配置），并且每个项目在磁盘上只保留最新版本。
 - **支持任意数量的项目**——`config.xml` 中每个 `<project>` 对应一张卡片。
+- **支持手动条目**——`<repo>` 写成 `overwrite@<数字>` 时，卡片数据改由 `overwrite.xml` 提供，从而把 GitHub 项目与任意外部下载链接混合在同一个站点里。
 - **完全由配置驱动**：标题、favicon 以及各项目的图标/名称/仓库地址全部来自 `config.xml`；图标为使用者自行提供的 PNG/WEBP 文件。
 - **浅色 / 深色主题**，默认「跟随系统」，可手动切换为浅色或深色。基于 Ant Design Vue 的设计令牌实现。
 - **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**。
@@ -58,6 +59,7 @@
 biangbiang/
 ├── .github/assets/         # README 徽章
 ├── config.xml              # 你的配置（挂载进容器）
+├── overwrite.xml           # 可选：手动条目（非 GitHub 项目，挂载进容器）
 ├── assets/                 # 你的 favicon 与项目图标（挂载，只读）
 ├── data/                   # 镜像产物、state.json、生成的 PWA 图标
 ├── backend/                # Node.js + Express 的 API / 镜像引擎
@@ -67,6 +69,7 @@ biangbiang/
 │       ├── config.js       # 解析 config.xml + 规范化仓库地址
 │       ├── github.js       # GitHub API 客户端 + 流式下载
 │       ├── mirror.js       # 镜像引擎（比对、下载、清理）
+│       ├── overwrite.js    # 解析 overwrite.xml（手动条目）
 │       ├── pwaIcons.js     # 用 ImageMagick 由 favicon 生成 PWA 图标
 │       ├── scheduler.js    # 每 24 小时运行的定时任务
 │       ├── state.js        # 内存态 + 持久化状态
@@ -133,6 +136,48 @@ user/project1
 
 可以自由增删 `<project>` 段落——站点始终为每个有效条目渲染且仅渲染一张卡片。`<repo>` 缺失或格式错误的条目会被跳过，且不影响其他条目。
 
+### 手动条目（overwrite.xml）
+
+`<repo>` 除了写 GitHub 地址，还可以写成 `overwrite@<数字>`。这样这张卡片的数据就不再来自 GitHub，而是来自与 `config.xml` **同目录**下的 `overwrite.xml`：
+
+```xml
+<project>
+    <icon>assets/icon2.webp</icon>
+    <name>我的私有项目</name>
+    <repo>overwrite@1</repo>
+</project>
+```
+
+`overwrite.xml` 的结构：
+
+```xml
+<overwrite>
+    <id>1</id>
+    <version>1.0.0</version>
+    <repo>https://example.com/my-project</repo>
+    <downloads>
+        <file>https://example.com/artifact.zip</file>
+        <file>https://example.com/artifact2.rar</file>
+    </downloads>
+</overwrite>
+```
+
+| 标签                 | 说明 |
+|----------------------|------|
+| `<id>`               | 与 `config.xml` 中 `overwrite@<数字>` 的数字对应。 |
+| `<version>`          | 卡片上显示的版本号，代替自动获取的版本。可省略。 |
+| `<repo>`             | 「查看原仓库」按钮指向的地址。可省略，省略时该按钮不显示。 |
+| `<downloads>/<file>` | 每个 `<file>` 对应一个下载按钮，按钮直接指向该外部链接。 |
+
+要点：
+
+- **只有**当 `config.xml` 中至少存在一个 `overwrite@<数字>` 时才会去读取 `overwrite.xml`。如果所有 `<repo>` 都是 GitHub 地址，这个文件根本不会被打开。
+- 手动条目**不会**下载或缓存任何文件——下载按钮直接指向你填写的外部链接，因此不占用服务器磁盘，也不受 GitHub 速率限制影响。
+- 手动条目**不显示「发布于」日期**（没有 Release，自然没有发布日期）；文件大小同样无法得知，因此也不显示。
+- 同一个 `config.xml` 中可以随意混用 GitHub 项目与手动条目。
+- 下载按钮上显示的文件名取自链接 URL 的最后一段。
+- Docker 部署时还需要额外挂载 `overwrite.xml`，见下文「快速开始」。
+
 > **图片完全由使用者提供。** 把你自己的 PNG/WEBP 文件放在 `config.xml` 旁边（或 `assets/` 子目录中），并在配置里引用它们。仓库内自带的图片仅作占位符。
 
 ---
@@ -157,6 +202,7 @@ cd biangbiang
 ```
 biangbiang/
 ├── config.xml
+├── overwrite.xml           # 可选：仅在用到 overwrite@<数字> 时需要
 └── assets/
     ├── favicon.png
     ├── icon1.png
@@ -164,6 +210,14 @@ biangbiang/
 ```
 
 编辑 `config.xml`，填入站点标题与你的项目（语法见上一节）。
+
+> **用到手动条目时**，还需要创建 `overwrite.xml`，并在 `docker-compose.yml` 中取消这一行的注释：
+>
+> ```yaml
+> - ./overwrite.xml:/app/overwrite.xml:ro
+> ```
+>
+> 请**先创建好文件**再取消注释——若文件不存在，Docker 会在宿主机上把它建成一个空目录，容器随后会因为读不到文件而让相关卡片报错。
 
 ### 3. 构建并启动
 

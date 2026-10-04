@@ -49,6 +49,7 @@
 
     <div class="rm-card__footer">
       <a-button
+        v-if="project.repo"
         type="link"
         size="small"
         :href="project.repo"

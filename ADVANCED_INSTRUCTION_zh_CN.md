@@ -86,6 +86,7 @@ mkdir -p assets data
 | 路径 | 用途 |
 |---|---|
 | `config.xml` | 站点配置（以只读方式挂载进容器）。 |
+| `overwrite.xml` | 可选。手动条目（非 GitHub 项目）。仅当 `config.xml` 里用到 `overwrite@<数字>` 时才需要。 |
 | `assets/` | 你的 favicon 与各项目图标（只读挂载）。 |
 | `data/` | 镜像产物、`state.json`、生成的 PWA 图标。**请务必备份。** |
 
@@ -155,6 +156,65 @@ user/project1
 ```
 
 由于 `./assets` 以只读方式挂载到 `/app/assets`，推荐把所有图片统一放在 `assets/` 下。
+
+### 手动条目 —— 把任意位置的文件托管到站点上（overwrite.xml）
+
+`<repo>` 不一定要写 GitHub。写成 `overwrite@<数字>` 时，这张卡片的数据就改由与 `config.xml` 同目录的 `overwrite.xml` 提供：
+
+```xml
+<!-- config.xml -->
+<project>
+    <icon>assets/icon2.webp</icon>
+    <name>我的项目</name>
+    <repo>overwrite@1</repo>
+</project>
+```
+
+```xml
+<!-- overwrite.xml -->
+<overwrite>
+    <id>1</id>
+    <version>1.0.0</version>
+    <repo>https://example.com/my-project</repo>
+    <downloads>
+        <file>https://example.com/artifact.zip</file>
+        <file>https://example.com/artifact2.rar</file>
+    </downloads>
+</overwrite>
+```
+
+| 标签 | 说明 |
+|---|---|
+| `<id>` | 与 `overwrite@<数字>` 中的数字对应。 |
+| `<version>` | 卡片上显示的版本号，代替自动获取的版本。可省略。 |
+| `<repo>` | 「查看原仓库」按钮指向的地址。可省略，省略时该按钮不显示。 |
+| `<downloads>/<file>` | 每个 `<file>` 对应一个下载按钮，直接指向该外部链接。 |
+
+行为说明：
+
+- **按需读取。** 只有当 `config.xml` 中至少存在一个 `overwrite@<数字>` 时才会读取 `overwrite.xml`；纯 GitHub 站点根本不会打开它，所以这个文件可以不存在。
+- **不下载任何东西。** 手动条目不会发起任何 HTTP 请求，也不会往 `./data` 写任何文件。下载按钮直接指向你填写的 URL，因此不占磁盘、也不受 GitHub 速率限制影响。
+- **不显示「发布于」日期。** 没有 Release，自然没有发布日期；文件大小同样未知，因此也不显示。
+- **可以随意混用。** GitHub 项目与手动条目能以任意组合共存。
+- **按钮上的文件名**取自链接 URL 的最后一段（`https://cdn.example.com/x/artifact3.zip` → `artifact3.zip`）。
+- **条目缺失不会拖垮站点。** 如果 `overwrite@<数字>` 找不到对应的 `<id>`，或者 `overwrite.xml` 整个不存在，只有那一张卡片会进入错误状态并输出一行日志，其他项目不受影响。
+
+### 挂载 overwrite.xml
+
+Compose 文件是把 `config.xml` 作为**单个文件**挂载的，所以 `overwrite.xml` 需要单独挂载。`docker-compose.yml` 与 `docker-compose.advanced.yml` 中都已经预留了这一行，默认注释掉：
+
+```yaml
+      - ./config.xml:/app/config.xml:ro
+      - ./assets:/app/assets:ro
+      # - ./overwrite.xml:/app/overwrite.xml:ro
+      - ./data:/app/data
+```
+
+1. 先创建文件：`touch /srv/biangbiang/overwrite.xml`，再填入内容。
+2. 取消上面那行的注释。
+3. `docker compose up -d --force-recreate`
+
+> **顺序很重要。** 如果文件还不存在就取消注释，Docker 会在宿主机上把 `./overwrite.xml` 建成一个空**目录**，容器随后什么也读不到。请先删掉这个目录、创建同名文件，再重建容器。
 
 ---
 
@@ -530,6 +590,10 @@ docker compose up -d --force-recreate
 |---|---|
 | 返回 `503 Frontend build not found.` | `PUBLIC_DIR` 下没有 `index.html`。不要覆盖 `PUBLIC_DIR`，SPA 已固化在镜像的 `/app/public`。 |
 | 所有卡片都显示「同步失败」且错误为 `404 Not Found` | `<repo>` 不存在或拼写错误；若是私有仓库，则令牌权限不足。 |
+| 日志出现 `overwrite.xml not found at /app/overwrite.xml` | 有项目用了 `overwrite@<数字>`，但该文件没有挂载。创建 `./overwrite.xml` 并取消对应的 volume 注释，见[挂载 overwrite.xml](#挂载-overwritexml)。 |
+| 某张卡片显示 `overwrite.xml has no <overwrite> block with <id>N</id>` | `overwrite@N` 中的数字在 `overwrite.xml` 里没有对应的 `<id>N</id>`。核对两个文件，或补上缺失的段落。 |
+| `overwrite.xml` 报 `EISDIR`／「是一个目录」 | 文件还不存在时就启用了挂载，Docker 把它建成了目录。执行 `rmdir ./overwrite.xml`，创建同名文件，再重建容器。 |
+| 手动条目的下载按钮 404 | `<file>` 链接写错或已失效——按钮直接指向该地址，biangbiang 不会去校验它。 |
 | 提示 `API rate limit exceeded` | 在 `.env` 中设置 `GITHUB_TOKEN`。 |
 | 卡片不显示图标 | `<icon>` 路径写错，或文件对 uid 1000 不可读。路径是相对 `config.xml` 解析的。 |
 | PWA 图标还是默认的 | `<favicon>` 缺失/不可读，或 ImageMagick 执行失败。查看 `docker compose logs \| grep '\[pwa\]'`，然后 `docker compose restart biangbiang`。 |

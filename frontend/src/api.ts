@@ -10,7 +10,8 @@ export interface Project {
   id: string;
   name: string;
   icon: string | null;
-  repo: string;
+  /** Repository link. Null for manual overwrite.xml entries that omit <repo>. */
+  repo: string | null;
   version: string | null;
   releaseName: string | null;
   publishedAt: string | null;
