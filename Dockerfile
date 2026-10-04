@@ -19,7 +19,9 @@ ENV NODE_ENV=production
 # ImageMagick derives the installable PWA icons from the user's favicon at
 # container start (any format ImageMagick can read, e.g. PNG or WEBP).
 # tzdata lets the container honour the TZ environment variable.
-RUN apk add --no-cache imagemagick tzdata
+# su-exec lets the entrypoint drop from root to `node` once it has fixed the
+# ownership of the bind-mounted data directory.
+RUN apk add --no-cache imagemagick tzdata su-exec
 
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
@@ -45,7 +47,12 @@ ENV PORT=8080 \
     TZ=Asia/Shanghai
 
 RUN mkdir -p /app/data && chown -R node:node /app
-USER node
+
+# A bind mount over /app/data hides the ownership set above, so the entrypoint
+# re-applies it at start-up and then drops privileges to `node`.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "src/index.js"]

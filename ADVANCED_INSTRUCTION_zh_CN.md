@@ -67,9 +67,13 @@
 ## 第一步 —— 把代码放到服务器上
 
 ```bash
-sudo mkdir -p /srv/biangbiang && cd /srv/biangbiang
+sudo mkdir -p /srv/biangbiang
+sudo chown "$USER":"$USER" /srv/biangbiang
+cd /srv/biangbiang
 git clone https://github.com/KZacharski/biangbiang.git .
 ```
+
+> **`chown` 这一步不能省。** `sudo mkdir` 建出来的目录属主是 `root`，之后在它里面创建的所有东西（包括 `./data`）都会继承这个属主。容器是以非特权用户运行的，属主为 `root` 的 `./data` 会让镜像任务在第一次写入时就报 `EACCES`。
 
 如果服务器无法访问外网 Git，可以在本地构建镜像并推送到镜像仓库，然后把 Compose 文件中的 `build:` 换成 `image:`。
 
@@ -80,6 +84,8 @@ cp docker-compose.advanced.yml docker-compose.yml
 cp .env.example .env
 mkdir -p assets data
 ```
+
+> `./data` 由容器写入。容器启动时会自动修正它的属主（见[文件属主](#文件属主)），因此无需手动 `chown`。
 
 从这里开始，只有三个路径需要你关心：
 
@@ -560,13 +566,15 @@ tar czf biangbiang-$(date +%F).tar.gz config.xml assets data
 
 ### 文件属主
 
-镜像以 uid/gid **1000**（`node`）运行。在 Linux 上，用 `sudo mkdir` 新建的 `./data` 可能属于 `root`，这会让镜像任务报 `EACCES` 错误：
+容器以 uid/gid **1000**（`node`）运行。bind mount 进来的 `./data` 会保留宿主机上的属主——如果是用 `sudo` 建的目录，属主就是 `root`——而非特权进程无法写入这样的目录。
+
+这一步由 entrypoint 自动完成：容器以 root 启动时，会先把 `DATA_DIR` 的属主改成 `node`，然后再降权运行。所以默认的 Compose 配置不需要任何手动 `chown`。
+
+如果容器根本不以 root 启动，entrypoint 就无能为力了。当你在 Compose 里设置了 `user:`，或用 `--user` 运行 `docker run` 时，`./data` 必须已经对该 uid 可写：
 
 ```bash
 sudo chown -R 1000:1000 /srv/biangbiang/data
 ```
-
-如果你无法修改属主，可以取消 Compose 文件中 `user: "1000:1000"` 的注释，并把 uid 改成 `./data` 的实际属主。
 
 ### GitHub 速率限制
 
@@ -595,7 +603,7 @@ docker compose up -d --force-recreate
 | 提示 `API rate limit exceeded` | 在 `.env` 中设置 `GITHUB_TOKEN`。 |
 | 卡片不显示图标 | `<icon>` 路径写错，或文件对 uid 1000 不可读。路径是相对 `config.xml` 解析的。 |
 | PWA 图标还是默认的 | `<favicon>` 缺失/不可读，或 ImageMagick 执行失败。查看 `docker compose logs \| grep '\[pwa\]'`，然后 `docker compose restart biangbiang`。 |
-| `./data` 报 `EACCES` / `permission denied` | 执行 `sudo chown -R 1000:1000 ./data`。 |
+| `./data` 报 `EACCES` / `permission denied` | 容器无法写入数据目录。只要容器以 root 启动，entrypoint 就会自动修正属主，所以出现这个错误说明你设置了 `user:`／`--user`，或者把 `./data` 挂成了只读。执行 `sudo chown -R 1000:1000 ./data`，如果加了 `:ro` 就去掉它。 |
 | `http://127.0.0.1:8080` 正常，但域名访问不了 | 检查 nginx 的 `proxy_pass` 目标、`server_name`，以及防火墙是否放行了 80/443 端口。 |
 | 下载中途断开 | 调大 nginx 配置中的 `proxy_read_timeout` / `proxy_send_timeout`。 |
 | Service Worker 始终注册不上 | 站点必须通过 **HTTPS**（或 `localhost`）访问。直接用 IP + 明文 HTTP 不属于安全上下文。 |

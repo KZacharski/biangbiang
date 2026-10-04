@@ -52,8 +52,10 @@ services:
       # Mirrored artifacts, state.json and the generated PWA icons (persisted).
       - ./data:/app/data
 
-    # The image runs as uid/gid 1000 ("node"). If ./data on the host belongs to
-    # a different uid and you cannot chown it, uncomment the line below.
+    # The container starts as root only long enough for the entrypoint to take
+    # ownership of ./data as uid/gid 1000 ("node"), then drops privileges to it.
+    # Uncomment the line below to run unprivileged from the very start; ./data
+    # must then already be writable by that uid.
     # user: "1000:1000"
 
     healthcheck:

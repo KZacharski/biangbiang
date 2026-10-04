@@ -369,7 +369,7 @@ Docker 镜像中已安装 ImageMagick。本地开发时请自行安装（`brew i
 未认证的 GitHub API 请求限制为每小时 60 次，对于少量项目、每天轮询一次来说绰绰有余。如果配置的项目很多，请在 `docker-compose.yml` 中设置 `GITHUB_TOKEN`。
 
 ### 以非 root 用户运行
-容器以 `node` 用户（uid 1000）运行。如果某个 bind mount 目录在宿主机上属于其他 uid（Linux 上常见），请将其 `chown` 为 1000，或在 Compose 服务中添加 `user: "1000:1000"`。
+容器的 entrypoint 会先以 root 启动，把 `./data` 的属主改成 `node` 用户（uid 1000），然后立刻降权运行——因此 bind mount 开箱即用，不需要手动 `chown`。如果你用 `user:` 或 `--user` 强制指定了其他用户，则该用户必须已经能写入 `./data`。
 
 ---
 

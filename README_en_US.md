@@ -420,9 +420,10 @@ than enough for a handful of projects polled once a day. If you configure many
 projects, set `GITHUB_TOKEN` in `docker-compose.yml`.
 
 ### Running as a non-root user
-The container runs as the `node` user (uid 1000). If a bind-mounted directory on
-the host belongs to a different uid (common on Linux), `chown` it to 1000, or add
-`user: "1000:1000"` to the Compose service.
+The container's entrypoint starts as root, takes ownership of `./data` as the
+`node` user (uid 1000), and then immediately drops privileges — so bind mounts
+work without any manual `chown`. If you force a different user with `user:` or
+`--user`, that user must already be able to write `./data`.
 
 ---
 

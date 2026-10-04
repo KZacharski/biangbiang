@@ -73,9 +73,16 @@ State and artifacts live in a bind mount (`./data`), so `docker compose up
 ## Step 1 — Get the code onto the server
 
 ```bash
-sudo mkdir -p /srv/biangbiang && cd /srv/biangbiang
+sudo mkdir -p /srv/biangbiang
+sudo chown "$USER":"$USER" /srv/biangbiang
+cd /srv/biangbiang
 git clone https://github.com/KZacharski/biangbiang.git .
 ```
+
+> **Don't skip the `chown`.** `sudo mkdir` leaves the directory owned by `root`,
+> and everything created inside it — `./data` included — inherits that. The
+> container runs as an unprivileged user, so a root-owned `./data` makes the
+> mirror fail with `EACCES` on its first write.
 
 If the server has no outbound Git access, build the image on your workstation
 and push it to a registry, then set `image:` in the Compose file instead of
@@ -88,6 +95,10 @@ cp docker-compose.advanced.yml docker-compose.yml
 cp .env.example .env
 mkdir -p assets data
 ```
+
+> `./data` is written by the container. The entrypoint corrects its ownership at
+> start-up (see [File ownership](#file-ownership)), so there is nothing to
+> `chown` by hand.
 
 Three paths matter from here on:
 
@@ -618,16 +629,21 @@ first GitHub poll finishes.
 
 ### File ownership
 
-The image runs as uid/gid **1000** (`node`). On Linux hosts a freshly created
-`./data` may be owned by `root` (if you ran `sudo mkdir`), which makes the
-mirror fail with `EACCES`:
+The container runs as uid/gid **1000** (`node`). A bind-mounted `./data` keeps
+whatever ownership the host gives it — `root`, if the directory was created with
+`sudo` — and an unprivileged process cannot write to that.
+
+The entrypoint handles it: when the container starts as root it takes ownership
+of `DATA_DIR` as `node` and only then drops privileges. The default Compose setup
+therefore needs no manual `chown`.
+
+It cannot help when the container never starts as root. If you set `user:` in the
+Compose file or pass `--user` to `docker run`, `./data` must already be writable
+by that uid:
 
 ```bash
 sudo chown -R 1000:1000 /srv/biangbiang/data
 ```
-
-If you cannot change ownership, uncomment `user: "1000:1000"` in the Compose
-file and match it to whoever owns `./data`.
 
 ### GitHub rate limits
 
@@ -661,7 +677,7 @@ i.e. 3 minutes) and recreate the container.
 | `API rate limit exceeded` | Set `GITHUB_TOKEN` in `.env`. |
 | Card shows no icon | `<icon>` path is wrong, or the file isn't readable by uid 1000. Paths resolve relative to `config.xml`. |
 | PWA icon is still the default | `<favicon>` is missing/unreadable, or ImageMagick failed. Check `docker compose logs \| grep '\[pwa\]'`, then `docker compose restart biangbiang`. |
-| `EACCES` / `permission denied` on `./data` | `sudo chown -R 1000:1000 ./data`. |
+| `EACCES` / `permission denied` on `./data` | The container could not write its data directory. It fixes ownership by itself whenever it starts as root, so this means you set `user:`/`--user`, or mounted `./data` read-only. `sudo chown -R 1000:1000 ./data`, and drop the `:ro` if you added one. |
 | Site works on `http://127.0.0.1:8080` but not through the domain | nginx `proxy_pass` target, `server_name`, or the firewall (ports 80/443 must be open). |
 | Download stops partway | Raise `proxy_read_timeout` / `proxy_send_timeout` in the nginx block. |
 | Service worker never registers | The site must be served over **HTTPS** (or `localhost`). Plain-HTTP on an IP address is not a secure context. |
