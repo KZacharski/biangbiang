@@ -138,6 +138,17 @@ body {
   flex-direction: column;
 }
 
+/* Ant Design Vue wraps the slot content in `.ant-card-body`, so the flex column
+   above only stretches that wrapper. Making it a full-height flex column too
+   lets `.rm-card__body` absorb the leftover height, which pins the footer to
+   the bottom - so the release date and repository link line up across a row of
+   cards whose contents have different heights. */
+.rm-card > .ant-card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .rm-card__head {
   display: flex;
   align-items: center;

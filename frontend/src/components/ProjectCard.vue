@@ -47,7 +47,7 @@
       <a-empty v-else :image="simpleImage" :description="emptyText" />
     </div>
 
-    <div class="rm-card__footer">
+    <div v-if="hasFooter" class="rm-card__footer">
       <a-button
         v-if="project.repo"
         type="link"
@@ -87,4 +87,9 @@ const dateText = computed(() => {
   const formatted = formatDate(props.project.publishedAt);
   return formatted ? `${strings.releasedAt} ${formatted}` : '';
 });
+
+// The footer holds the repository link and the release date. A manual entry may
+// have neither, in which case the whole row is dropped so it does not leave an
+// empty divider strip behind.
+const hasFooter = computed(() => Boolean(props.project.repo || dateText.value));
 </script>
