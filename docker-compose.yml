@@ -22,10 +22,10 @@ services:
       # Your configuration + project icons (read-only).
       - ./config.xml:/app/config.xml:ro
       - ./assets:/app/assets:ro
-      # Optional manual (non-GitHub) projects. Create ./overwrite.xml first, then
-      # uncomment this line and reference entries with <repo>overwrite@1</repo>
-      # in config.xml. Leave it commented out for a GitHub-only site.
-      # - ./overwrite.xml:/app/overwrite.xml:ro
+      # Manual (non-GitHub) projects, referenced from config.xml as
+      # <repo>overwrite@N</repo>. Mounted like config.xml so host edits win. It
+      # is harmless for a GitHub-only site, where it is simply never read.
+      - ./overwrite.xml:/app/overwrite.xml:ro
       # Mirrored artifacts + state (persisted on the host).
       - ./data:/app/data
     healthcheck:

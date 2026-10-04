@@ -94,7 +94,7 @@ Three paths matter from here on:
 | Path | Purpose |
 |---|---|
 | `config.xml` | Your site configuration (mounted read-only). |
-| `overwrite.xml` | Optional. Manual (non-GitHub) projects. Only needed if `config.xml` uses `overwrite@<number>`. |
+| `overwrite.xml` | Manual (non-GitHub) projects, mounted read-only. Only read if `config.xml` uses `overwrite@<number>`. |
 | `assets/` | Your favicon + project icons (mounted read-only). |
 | `data/` | Mirrored artifacts, `state.json`, generated PWA icons. **Back this up.** |
 
@@ -227,25 +227,24 @@ Behaviour:
 
 ### Mounting `overwrite.xml`
 
-The Compose files mount `config.xml` as a **single file**, so `overwrite.xml`
-needs a mount of its own. Both `docker-compose.yml` and
-`docker-compose.advanced.yml` already carry it, commented out:
+`overwrite.xml` is mounted exactly like `config.xml` — as a **single file** — by
+both `docker-compose.yml` and `docker-compose.advanced.yml`:
 
 ```yaml
       - ./config.xml:/app/config.xml:ro
+      - ./overwrite.xml:/app/overwrite.xml:ro
       - ./assets:/app/assets:ro
-      # - ./overwrite.xml:/app/overwrite.xml:ro
       - ./data:/app/data
 ```
 
-1. Create the file first: `touch /srv/biangbiang/overwrite.xml`, then fill it in.
-2. Uncomment the mount line.
-3. `docker compose up -d --force-recreate`
+The file is re-read from disk on **every** mirror cycle, so editing it on the
+host is enough: press 立即检查更新 in the UI, or wait for the next scheduled
+check. No rebuild or restart is required.
 
-> **Order matters.** If you uncomment the mount before the file exists, Docker
-> creates an empty *directory* at `./overwrite.xml` on the host and the
-> container reads nothing. Remove the directory, create the file, and recreate
-> the container.
+> **Keep the file present.** If `./overwrite.xml` does not exist, Docker creates
+> an empty *directory* at that path instead, and every `overwrite@<number>` card
+> fails with `EISDIR`. A fresh clone already ships a working starting point; if
+> you deleted it, recreate it with `touch /srv/biangbiang/overwrite.xml`.
 
 ---
 
@@ -655,7 +654,7 @@ i.e. 3 minutes) and recreate the container.
 |---|---|
 | `503 Frontend build not found.` | `PUBLIC_DIR` doesn't contain `index.html`. Don't override `PUBLIC_DIR`; the SPA is baked into the image at `/app/public`. |
 | Every card says "同步失败" with `404 Not Found` | The `<repo>` doesn't exist or is misspelled — or the token lacks access to a private repo. |
-| `overwrite.xml not found at /app/overwrite.xml` in the logs | A project uses `overwrite@<number>` but the file isn't mounted. Create `./overwrite.xml` and uncomment its volume line — see [Mounting `overwrite.xml`](#mounting-overwritexml). |
+| `overwrite.xml not found at /app/overwrite.xml` in the logs | A project uses `overwrite@<number>` but the file is missing. Create `./overwrite.xml` — see [Mounting `overwrite.xml`](#mounting-overwritexml). |
 | One card says `overwrite.xml has no <overwrite> block with <id>N</id>` | The number in `overwrite@N` has no matching `<id>N</id>`. Check both files, or add the missing block. |
 | `EISDIR` / "is a directory" for `overwrite.xml` | The mount was enabled before the file existed, so Docker created a directory. `rmdir ./overwrite.xml`, create the file, recreate the container. |
 | Manual download button 404s | The `<file>` URL is wrong or no longer reachable — the button links straight to it, so it is never validated by biangbiang. |

@@ -4,7 +4,7 @@ import path from 'node:path';
 import express from 'express';
 
 import { env, releasesDir } from './env.js';
-import { loadConfig } from './config.js';
+import { loadConfig, OVERWRITE_FILE } from './config.js';
 import { createStateStore } from './state.js';
 import { createMirror } from './mirror.js';
 import { startScheduler } from './scheduler.js';
@@ -45,7 +45,9 @@ app.post('/api/refresh', async (_req, res) => {
 /* --------------------------------------------------- config assets/media -- */
 
 const configDir = path.dirname(env.configPath);
-const configBaseName = path.basename(env.configPath);
+// config.xml and its companion overwrite.xml describe the deployment, so they
+// are never served as media even though they sit next to the project icons.
+const configFileNames = new Set([path.basename(env.configPath), OVERWRITE_FILE]);
 
 app.get('/media/*', (req, res) => {
   let rel;
@@ -58,7 +60,7 @@ app.get('/media/*', (req, res) => {
   const target = path.resolve(configDir, rel);
   const within = target === configDir || target.startsWith(configDir + path.sep);
   if (!within) return res.status(403).end();
-  if (path.basename(target) === configBaseName) return res.status(404).end();
+  if (configFileNames.has(path.basename(target))) return res.status(404).end();
 
   let stat;
   try {

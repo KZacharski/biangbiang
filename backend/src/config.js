@@ -31,6 +31,12 @@ function toArray(value) {
 const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
 
 /**
+ * Name of the companion file holding manual (non-GitHub) project entries. It
+ * always sits next to config.xml, and is only read when a project asks for it.
+ */
+export const OVERWRITE_FILE = 'overwrite.xml';
+
+/**
  * A `<repo>` may point at GitHub, or at a manual entry in overwrite.xml using
  * the form `overwrite@<number>`, where the number is the `<id>` of an
  * `<overwrite>` block in that file.
@@ -153,7 +159,7 @@ export function loadConfig(configPath) {
     dir,
     // overwrite.xml sits next to config.xml. It is only read when at least one
     // project actually asks for it, so GitHub-only setups never need the file.
-    overwritePath: path.join(dir, 'overwrite.xml'),
+    overwritePath: path.join(dir, OVERWRITE_FILE),
     usesOverwrite: projects.some((project) => project.type === 'overwrite'),
   };
 }

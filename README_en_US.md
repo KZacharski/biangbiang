@@ -197,7 +197,7 @@ Worth knowing:
 - Manual entries **show no "released at" date** (there is no release to date) and no file size (it is unknown).
 - GitHub projects and manual entries can be mixed freely within one `config.xml`.
 - The file name shown on a download button is the last path segment of its URL.
-- Docker deployments must mount `overwrite.xml` as well — see "Quick start" below.
+- Docker deployments mount `overwrite.xml` read-only alongside `config.xml`, so there is nothing extra to set up.
 
 > **All images are user-supplied.** Put your own PNG/WEBP files next to
 > `config.xml` (or in the `assets/` subdirectory) and reference them from the
@@ -236,16 +236,15 @@ biangbiang/
 Edit `config.xml` and fill in the site title and your projects (syntax in the
 previous section).
 
-> **Using manual entries?** You also need to create `overwrite.xml` and
-> uncomment this line in `docker-compose.yml`:
+> **Using manual entries?** Just fill them in `overwrite.xml` — `docker-compose.yml`
+> already mounts it into the container.
 >
-> ```yaml
-> - ./overwrite.xml:/app/overwrite.xml:ro
-> ```
+> Press 立即检查更新 in the UI after editing the file on the host and the change
+> takes effect; no rebuild is needed.
 >
-> Create the **file first**, then uncomment — if it does not exist, Docker
-> creates an empty *directory* at that path on the host and the container will
-> fail to read it, putting the affected cards into an error state.
+> Keep the file present: if `./overwrite.xml` is missing, Docker creates an empty
+> directory at that path instead and the affected cards fail with `EISDIR`. A
+> fresh clone ships a working example, so this only affects you if you deleted it.
 
 ### 3. Build and start
 
@@ -287,8 +286,8 @@ git pull
 docker compose up -d --build
 ```
 
-`./config.xml`, `./assets` and `./data` are all preserved on the host through
-bind mounts, so upgrades never lose them.
+`./config.xml`, `./overwrite.xml`, `./assets` and `./data` are all preserved on
+the host through bind mounts, so upgrades never lose them.
 
 ---
 

@@ -86,7 +86,7 @@ mkdir -p assets data
 | 路径 | 用途 |
 |---|---|
 | `config.xml` | 站点配置（以只读方式挂载进容器）。 |
-| `overwrite.xml` | 可选。手动条目（非 GitHub 项目）。仅当 `config.xml` 里用到 `overwrite@<数字>` 时才需要。 |
+| `overwrite.xml` | 手动条目（非 GitHub 项目），只读挂载。仅当 `config.xml` 里用到 `overwrite@<数字>` 时才会被读取。 |
 | `assets/` | 你的 favicon 与各项目图标（只读挂载）。 |
 | `data/` | 镜像产物、`state.json`、生成的 PWA 图标。**请务必备份。** |
 
@@ -201,20 +201,18 @@ user/project1
 
 ### 挂载 overwrite.xml
 
-Compose 文件是把 `config.xml` 作为**单个文件**挂载的，所以 `overwrite.xml` 需要单独挂载。`docker-compose.yml` 与 `docker-compose.advanced.yml` 中都已经预留了这一行，默认注释掉：
+`overwrite.xml` 与 `config.xml` 一样，由 `docker-compose.yml` 和 `docker-compose.advanced.yml` 以**单个文件**的方式挂载：
 
 ```yaml
       - ./config.xml:/app/config.xml:ro
+      - ./overwrite.xml:/app/overwrite.xml:ro
       - ./assets:/app/assets:ro
-      # - ./overwrite.xml:/app/overwrite.xml:ro
       - ./data:/app/data
 ```
 
-1. 先创建文件：`touch /srv/biangbiang/overwrite.xml`，再填入内容。
-2. 取消上面那行的注释。
-3. `docker compose up -d --force-recreate`
+每一轮镜像检查都会重新读取这个文件，所以改完宿主机上的内容后，点一下界面上的「立即检查更新」，或等下一次定时检查即可生效，**不需要**重新构建或重启容器。
 
-> **顺序很重要。** 如果文件还不存在就取消注释，Docker 会在宿主机上把 `./overwrite.xml` 建成一个空**目录**，容器随后什么也读不到。请先删掉这个目录、创建同名文件，再重建容器。
+> **请保持文件存在。** 如果 `./overwrite.xml` 不存在，Docker 会把它建成一个空**目录**，所有 `overwrite@<数字>` 卡片都会以 `EISDIR` 报错。仓库里已经自带一份可直接使用的样例，新克隆的仓库不会遇到这个问题；若你删掉了它，用 `touch /srv/biangbiang/overwrite.xml` 重新建一个即可。
 
 ---
 
@@ -590,7 +588,7 @@ docker compose up -d --force-recreate
 |---|---|
 | 返回 `503 Frontend build not found.` | `PUBLIC_DIR` 下没有 `index.html`。不要覆盖 `PUBLIC_DIR`，SPA 已固化在镜像的 `/app/public`。 |
 | 所有卡片都显示「同步失败」且错误为 `404 Not Found` | `<repo>` 不存在或拼写错误；若是私有仓库，则令牌权限不足。 |
-| 日志出现 `overwrite.xml not found at /app/overwrite.xml` | 有项目用了 `overwrite@<数字>`，但该文件没有挂载。创建 `./overwrite.xml` 并取消对应的 volume 注释，见[挂载 overwrite.xml](#挂载-overwritexml)。 |
+| 日志出现 `overwrite.xml not found at /app/overwrite.xml` | 有项目用了 `overwrite@<数字>`，但该文件不存在。请创建 `./overwrite.xml`，见[挂载 overwrite.xml](#挂载-overwritexml)。 |
 | 某张卡片显示 `overwrite.xml has no <overwrite> block with <id>N</id>` | `overwrite@N` 中的数字在 `overwrite.xml` 里没有对应的 `<id>N</id>`。核对两个文件，或补上缺失的段落。 |
 | `overwrite.xml` 报 `EISDIR`／「是一个目录」 | 文件还不存在时就启用了挂载，Docker 把它建成了目录。执行 `rmdir ./overwrite.xml`，创建同名文件，再重建容器。 |
 | 手动条目的下载按钮 404 | `<file>` 链接写错或已失效——按钮直接指向该地址，biangbiang 不会去校验它。 |

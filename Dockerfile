@@ -30,7 +30,9 @@ COPY backend/ ./
 COPY --from=frontend-build /build/frontend/dist /app/public
 
 # Default configuration + assets, so `docker run` works without any mounts.
+# overwrite.xml holds the manual (non-GitHub) entries that config.xml refers to.
 COPY config.xml /app/config.xml
+COPY overwrite.xml /app/overwrite.xml
 COPY assets /app/assets
 
 ENV PORT=8080 \

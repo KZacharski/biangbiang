@@ -176,7 +176,7 @@ user/project1
 - 手动条目**不显示「发布于」日期**（没有 Release，自然没有发布日期）；文件大小同样无法得知，因此也不显示。
 - 同一个 `config.xml` 中可以随意混用 GitHub 项目与手动条目。
 - 下载按钮上显示的文件名取自链接 URL 的最后一段。
-- Docker 部署时还需要额外挂载 `overwrite.xml`，见下文「快速开始」。
+- Docker 部署时 `overwrite.xml` 会与 `config.xml` 一样以只读方式挂载进容器，无需任何额外操作。
 
 > **图片完全由使用者提供。** 把你自己的 PNG/WEBP 文件放在 `config.xml` 旁边（或 `assets/` 子目录中），并在配置里引用它们。仓库内自带的图片仅作占位符。
 
@@ -211,13 +211,11 @@ biangbiang/
 
 编辑 `config.xml`，填入站点标题与你的项目（语法见上一节）。
 
-> **用到手动条目时**，还需要创建 `overwrite.xml`，并在 `docker-compose.yml` 中取消这一行的注释：
+> **用到手动条目时**，直接在 `overwrite.xml` 里填写条目即可——`docker-compose.yml` 已经把它挂载进容器了。
 >
-> ```yaml
-> - ./overwrite.xml:/app/overwrite.xml:ro
-> ```
+> 改完宿主机上的文件后，点一下界面上的「立即检查更新」就会生效，不需要重建容器。
 >
-> 请**先创建好文件**再取消注释——若文件不存在，Docker 会在宿主机上把它建成一个空目录，容器随后会因为读不到文件而让相关卡片报错。
+> 注意保持文件存在：若 `./overwrite.xml` 缺失，Docker 会把它建成一个空目录，相关卡片会以 `EISDIR` 报错。仓库自带一份可直接使用的样例，新克隆的仓库不受影响。
 
 ### 3. 构建并启动
 
@@ -257,7 +255,7 @@ git pull
 docker compose up -d --build
 ```
 
-`./config.xml`、`./assets` 与 `./data` 都通过挂载保留在宿主机上，升级不会丢失它们。
+`./config.xml`、`./overwrite.xml`、`./assets` 与 `./data` 都通过挂载保留在宿主机上，升级不会丢失它们。
 
 ---
 
