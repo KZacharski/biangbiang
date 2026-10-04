@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# biangbiang - production deployment for a Linux server
+#
+#   The container is published on 127.0.0.1 ONLY, so it can never be reached
+#   from the internet directly. The host's nginx terminates TLS for your domain
+#   and proxies to http://127.0.0.1:8080.
+#
+#   Quick start:
+#     1. cp docker-compose.advanced.yml docker-compose.yml
+#     2. edit config.xml and drop your icons into assets/
+#     3. cp .env.example .env   and fill in GITHUB_TOKEN (optional)
+#     4. docker compose up -d --build
+#     5. follow ADVANCED_INSTRUCTION_en_US.md (or ADVANCED_INSTRUCTION_zh_CN.md)
+#        to wire up nginx + TLS
+# ---------------------------------------------------------------------------
+
+services:
+  biangbiang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: biangbiang:latest
+    container_name: biangbiang
+    restart: unless-stopped
+
+    # Loopback-only. nginx (or Caddy/Traefik) on the host is the only way in.
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    environment:
+      # Container timezone - affects the timestamps shown on the site.
+      TZ: "${TZ:-Asia/Shanghai}"
+      # How often to poll GitHub for new releases, in hours (min 0.05 = 3 min).
+      CHECK_INTERVAL_HOURS: "24"
+      # "false" skips the initial sync on boot; the scheduler still runs.
+      MIRROR_ON_START: "true"
+      # Parallel asset downloads per project.
+      DOWNLOAD_CONCURRENCY: "4"
+      # Optional but recommended. A fine-grained PAT with public read-only
+      # access lifts the GitHub API limit from 60 to 5000 requests/hour.
+      # Leave empty in .env to run unauthenticated.
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+
+    volumes:
+      # Your configuration + project icons (read-only).
+      - ./config.xml:/app/config.xml:ro
+      - ./assets:/app/assets:ro
+      # Mirrored artifacts, state.json and the generated PWA icons (persisted).
+      - ./data:/app/data
+
+    # The image runs as uid/gid 1000 ("node"). If ./data on the host belongs to
+    # a different uid and you cannot chown it, uncomment the line below.
+    # user: "1000:1000"
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    # Release artifacts are large; keep the logs from filling the disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

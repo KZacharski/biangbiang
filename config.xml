@@ -1,0 +1,12 @@
+<favicon>assets/favicon.png</favicon>
+<title>测试镜像站点</title>
+<project>
+    <icon>assets/icon1.png</icon>
+    <name>Shizuku</name>
+    <repo>https://github.com/RikkaApps/Shizuku</repo>
+</project>
+<project>
+    <icon>assets/icon2.webp</icon>
+    <name>不存在的项目</name>
+    <repo>https://github.com/user/project2</repo>
+</project>

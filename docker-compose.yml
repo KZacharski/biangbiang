@@ -1,0 +1,36 @@
+services:
+  biangbiang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: biangbiang:latest
+    container_name: biangbiang
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Container timezone. Override with TZ=<IANA zone> in .env.
+      TZ: "${TZ:-Asia/Shanghai}"
+      # How often to poll GitHub for new releases, in hours.
+      CHECK_INTERVAL_HOURS: "24"
+      # Set MIRROR_ON_START=false to skip the initial sync on boot.
+      MIRROR_ON_START: "true"
+      # Optional: a GitHub token raises the anonymous API rate limit
+      # (60 -> 5000 requests/hour). Leave empty to run unauthenticated.
+      GITHUB_TOKEN: ""
+    volumes:
+      # Your configuration + project icons (read-only).
+      - ./config.xml:/app/config.xml:ro
+      - ./assets:/app/assets:ro
+      # Mirrored artifacts + state (persisted on the host).
+      - ./data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s

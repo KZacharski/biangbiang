@@ -1,0 +1,240 @@
+/*
+ * Global styles. Colours mirror Ant Design's design tokens for light/dark so the
+ * page background matches the components rendered by ConfigProvider.
+ */
+:root {
+  --rm-bg-layout: #f5f5f5;
+  --rm-bg-container: #ffffff;
+  --rm-border-secondary: #f0f0f0;
+  --rm-text-secondary: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme='dark'] {
+  --rm-bg-layout: #000000;
+  --rm-bg-container: #141414;
+  --rm-border-secondary: #303030;
+  --rm-text-secondary: rgba(255, 255, 255, 0.45);
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+html {
+  background: var(--rm-bg-layout);
+}
+
+body {
+  margin: 0;
+  background: var(--rm-bg-layout);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------------------------------------- layout -- */
+
+.rm-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.rm-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--rm-bg-container);
+  border-bottom: 1px solid var(--rm-border-secondary);
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.rm-header__inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rm-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rm-brand__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.rm-brand__text {
+  min-width: 0;
+}
+
+.rm-brand__title {
+  margin: 0 !important;
+  font-size: 20px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rm-content {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+}
+
+.rm-footer {
+  border-top: 1px solid var(--rm-border-secondary);
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.rm-footer__credit a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rm-text-secondary);
+  transition: color 0.2s;
+}
+
+.rm-footer__credit a:hover {
+  color: #1677ff;
+}
+
+/* -------------------------------------------------------------- cards -- */
+
+.rm-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rm-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rm-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: var(--rm-bg-layout);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--rm-border-secondary);
+}
+
+.rm-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.rm-card__avatar-fallback {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.rm-card__meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.rm-card__name {
+  margin: 0 0 4px !important;
+  font-size: 16px;
+}
+
+.rm-card__body {
+  flex: 1 1 auto;
+  margin-top: 16px;
+}
+
+.rm-card__assets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rm-card__asset-btn {
+  max-width: 100%;
+  height: auto;
+  min-height: 32px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  white-space: normal;
+  text-align: left;
+}
+
+.rm-card__asset-btn .rm-card__asset-name {
+  word-break: break-all;
+}
+
+.rm-card__asset-size {
+  opacity: 0.55;
+  font-size: 12px;
+}
+
+.rm-card__footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rm-border-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rm-card__dates {
+  font-size: 12px;
+  color: var(--rm-text-secondary);
+}
+
+@media (max-width: 575px) {
+  .rm-header__inner {
+    padding: 10px 12px;
+  }
+  .rm-content {
+    padding: 16px 12px 24px;
+  }
+  .rm-brand__title {
+    font-size: 18px;
+  }
+}

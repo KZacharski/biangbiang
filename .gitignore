@@ -1,0 +1,30 @@
+# ---------------------------------------------------------------- deps -- #
+node_modules/
+
+# --------------------------------------------------------------- build -- #
+dist/
+
+# ---------------------------------------------------------------- data -- #
+# Mirrored artifacts, state.json and the generated PWA icons. Only the
+# .gitkeep placeholder is tracked so the empty directory survives a clone.
+data/*
+!data/.gitkeep
+
+# ------------------------------------------------------------ secrets -- #
+# Real environment files may contain a GITHUB_TOKEN - never commit them.
+# .env.example is the committed template.
+.env
+.env.*
+!.env.example
+
+# --------------------------------------------------------------- local -- #
+# Agent tooling, not part of the project.
+.agents/
+skills-lock.json
+
+# The prompt used to generate the project.
+prompt.md
+
+# ------------------------------------------------------- logs / OS cruft -- #
+*.log
+.DS_Store
