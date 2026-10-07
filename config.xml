@@ -1,5 +1,6 @@
 <favicon>assets/favicon.png</favicon>
 <title>测试镜像站点</title>
+<lang>zh_cn</lang>
 <sortable>true</sortable>
 <accent>blue</accent>
 <font>assets/AlibabaPuHuiTi-3-55-Regular.woff2</font>

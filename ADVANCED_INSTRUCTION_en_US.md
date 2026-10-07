@@ -1,6 +1,6 @@
 # biangbiang — Advanced Deployment Guide (Docker + nginx + HTTPS)
 
-[简体中文](ADVANCED_INSTRUCTION_zh_CN.md) · **English**
+[简体中文](ADVANCED_INSTRUCTION_zh_CN.md) · [繁體中文](ADVANCED_INSTRUCTION_zh_TW.md) · **English** · [Polski](ADVANCED_INSTRUCTION_pl_PL.md) · [Русский](ADVANCED_INSTRUCTION_ru_RU.md) · [Svenska](ADVANCED_INSTRUCTION_sv_SE.md)
 
 This guide takes you from a bare Linux server to a **running, HTTPS-secured
 instance of biangbiang** behind an nginx reverse proxy.
@@ -142,6 +142,7 @@ it for your own projects.
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>My Mirror</title>
+<lang>zh_cn</lang>
 <sortable>true</sortable>
 <accent>volcano</accent>
 <font>assets/MyFont.woff2</font>
@@ -164,6 +165,7 @@ it for your own projects.
 | Tag | Where | Required | Behaviour |
 |---|---|---|---|
 | `<title>` | root | no | Site title in the header, the browser tab, and the **installed app's name**. Falls back to `Releases`. |
+| `<lang>` | root | no | Interface language: one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` (case-insensitive, and a hyphen works too, so `zh-CN` is accepted). The interface copy, date formats and the text Ant Design renders inside its own components all follow it. Falls back to `zh_cn` (Simplified Chinese). |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
 | `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
 | `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values fall back to the default blue — never an error, and the site is never left uncoloured. |
@@ -668,7 +670,7 @@ docker compose up -d --build
 
 > Checking out a tag leaves you in a detached HEAD state, which makes no
 > difference to a deployment. To pin a specific version, replace `"$(...)"` with
-> a tag name such as `v1.0.1`.
+> a tag name such as `v1.0.2`.
 
 On the **git development version** (`main`), `git pull` is still what you want:
 

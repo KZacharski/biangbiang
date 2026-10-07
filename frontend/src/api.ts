@@ -1,3 +1,5 @@
+import { localeTag } from './strings';
+
 export type ProjectStatus = 'ok' | 'empty' | 'error' | 'pending';
 
 export interface Artifact {
@@ -23,6 +25,8 @@ export interface Project {
 
 export interface SiteState {
   title: string;
+  /** Interface language code from config.xml `<lang>`, e.g. `zh_cn`. */
+  lang: string;
   /** Whether visitors may re-sort the cards (config.xml `<sortable>`). */
   sortable: boolean;
   /** Accent colour as a hex string, resolved from config.xml `<accent>`. */
@@ -63,12 +67,12 @@ export function formatBytes(bytes: number): string {
   return `${rounded} ${units[unit]}`;
 }
 
-/** Format an ISO timestamp in the browser's locale, zh-Hans by default. */
+/** Format an ISO timestamp in the language config.xml selected. */
 export function formatDate(iso: string | null): string {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('zh-Hans', {
+  return date.toLocaleString(localeTag.value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

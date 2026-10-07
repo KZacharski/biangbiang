@@ -1,6 +1,6 @@
 # biangbiang
 
-**简体中文** · [English](README_en_US.md)
+**简体中文** · [繁體中文](README_zh_TW.md) · [English](README_en_US.md) · [Polski](README_pl_PL.md) · [Русский](README_ru_RU.md) · [Svenska](README_sv_SE.md)
 
 ![100% SLOP —— 但这个徽章是人工画的](.github/assets/slop_badge.webp)
 
@@ -27,7 +27,7 @@
 - **可配置字体**：`<font>` 填字体文件路径（如 `.woff2`），站点整体——含 Ant Design 组件——都会改用该字体；路径与 `<favicon>` 一样相对于 `config.xml` 所在目录解析，省略或指向不存在的文件时保持系统默认字体。
 - **浅色 / 深色主题**，默认「跟随系统」，可手动切换为浅色或深色。基于 Ant Design Vue 的设计令牌实现。
 - **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**；应用名跟随 `<title>`，图标跟随 `<favicon>`。
-- **简体中文（zh-Hans）**界面，文案硬编码。
+- **多语言界面**：把 `<lang>` 设为 `zh_cn` / `zh_tw` / `en_us` / `pl_pl` / `ru_ru` / `sv_se` 之一，整套界面文案、日期格式以及 Ant Design 组件自带的文案都会切换为该语言；省略或填了无法识别的值时使用简体中文。
 - **响应式卡片网格**：手机单列、平板双列、桌面三列，每张卡片各自独立高度，不会被拉伸到与同行最高的一张齐平。较矮的卡片还会上浮填满下方的空位，卡片之间始终只有 16px 的间距——Safari 26.4+ 走原生 Grid Lanes，其他浏览器由前端自行排版。
 - **健壮性**：某个仓库损坏或地址错误不会拖垮整个站点——同步失败的项目会保留上一次成功的数据。自带的样例配置刻意保留了两张失败卡片来演示这一点。
 
@@ -106,6 +106,7 @@ biangbiang/
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>Page title</title>
+<lang>zh_cn</lang>
 <sortable>true</sortable>
 <accent>volcano</accent>
 <font>assets/MyFont.woff2</font>
@@ -126,6 +127,7 @@ biangbiang/
 | 标签         | 位置           | 说明 |
 |--------------|----------------|------|
 | `<title>`    | 根节点         | 站点标题，显示在页头、浏览器标签页，以及**安装后的应用名**（每次启动时写入 manifest）。 |
+| `<lang>`     | 根节点         | 可选。界面语言，取 `zh_cn` / `zh_tw` / `en_us` / `pl_pl` / `ru_ru` / `sv_se` 之一（大小写不敏感，也接受 `zh-CN` 这种连字符写法）。省略或填了无法识别的值时一律回退为 `zh_cn`（简体中文）。 |
 | `<favicon>`  | 根节点         | 可选。用作站点 favicon 的 PNG/WEBP 文件。 |
 | `<sortable>` | 根节点         | 可选。`true` 时页头出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认「按名称」（即字母顺序）；`false` 或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>`   | 根节点         | 可选。Ant Design 基础色板名（`red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta`，大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或填了无法识别的值时，一律回退为默认蓝色。 |
@@ -276,7 +278,7 @@ git checkout "$(git tag --sort=-v:refname | head -1)"   # 最新的 release 标�
 docker compose up -d --build
 ```
 
-> 检出标签后处于 detached HEAD 状态，这对部署没有影响。想固定在某个具体版本，把 `"$(...)"` 换成 `v1.0.1` 这样的标签名即可。
+> 检出标签后处于 detached HEAD 状态，这对部署没有影响。想固定在某个具体版本，把 `"$(...)"` 换成 `v1.0.2` 这样的标签名即可。
 
 如果部署的是 **git 开发版**（`main` 分支），改用 `git pull` 即可：
 

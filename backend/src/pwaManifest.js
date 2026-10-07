@@ -19,6 +19,7 @@ export const MANIFEST_FILE = 'manifest.webmanifest';
  *
  * @param {object} options
  * @param {string} options.title configured site title
+ * @param {string} options.langTag BCP-47 tag written to the manifest's `lang`
  * @param {string} options.templatePath absolute path to the bundled manifest
  * @param {string} options.outDir directory to write the generated manifest into
  * @param {Console} [options.logger]
@@ -28,6 +29,7 @@ export const MANIFEST_FILE = 'manifest.webmanifest';
  */
 export async function generatePwaManifest({
   title,
+  langTag,
   templatePath,
   outDir,
   logger = console,
@@ -43,7 +45,7 @@ export async function generatePwaManifest({
   }
 
   const out = path.join(outDir, MANIFEST_FILE);
-  const manifest = { ...template, name: title, short_name: title };
+  const manifest = { ...template, name: title, short_name: title, lang: langTag };
 
   try {
     await fsp.mkdir(outDir, { recursive: true });

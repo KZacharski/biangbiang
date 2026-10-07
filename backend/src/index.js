@@ -62,10 +62,15 @@ const FONT_FILE_RE = /\.(woff2?|ttf|otf)$/i;
 const MEDIA_CACHE = 'public, max-age=300';
 const FONT_CACHE = 'public, max-age=2592000';
 
-app.get('/media/*', (req, res) => {
+// Express 5 requires named wildcards, so `/media/*` is `/media/*splat` and the
+// capture arrives as an array of path segments rather than `req.params[0]`.
+app.get('/media/*splat', (req, res) => {
+  const splat = req.params.splat;
+  const raw = Array.isArray(splat) ? splat.join('/') : String(splat ?? '');
+
   let rel;
   try {
-    rel = decodeURIComponent(req.params[0] || '');
+    rel = decodeURIComponent(raw);
   } catch {
     return res.status(400).end();
   }
@@ -157,16 +162,17 @@ const hasSpa = fs.existsSync(spaShellPath);
 let spaShell = null;
 
 /**
- * Bake the configured title into the SPA shell.
+ * Bake the configured branding into the SPA shell.
  *
- * The built `index.html` carries the frontend's own placeholder name in both the
- * `<title>` and the iOS home-screen label, so a deployment would otherwise show
- * that name until `/api/state` answers - and keep showing it on the iOS home
- * screen forever. Rewriting both here makes the very first paint correct. The
- * replacers are functions so that a title containing `$&` or `$1` is inserted
- * literally, and the title is escaped because it lands in HTML.
+ * The built `index.html` carries the frontend's own placeholder values: the
+ * `<title>`, the iOS home-screen label, and `lang="zh-Hans"` on the root
+ * element. A deployment would otherwise show the placeholder name until
+ * `/api/state` answers - and keep showing it on the iOS home screen forever.
+ * Rewriting them here makes the very first byte correct, before any JavaScript
+ * runs. The replacers are functions so that a title containing `$&` or `$1` is
+ * inserted literally, and the title is escaped because it lands in HTML.
  */
-function withTitle(html, title) {
+function withBranding(html, { title, langTag }) {
   const escaped = title
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -174,6 +180,7 @@ function withTitle(html, title) {
     .replace(/"/g, '&quot;');
 
   return html
+    .replace(/(<html[^>]*\slang=")[^"]*(")/, (_match, open, close) => `${open}${langTag}${close}`)
     .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escaped}</title>`)
     .replace(
       /(<meta\s+name="apple-mobile-web-app-title"\s+content=")[^"]*(")/,
@@ -200,7 +207,9 @@ app.use(
   }),
 );
 
-app.get('*', (req, res, next) => {
+// `/{*splat}` is the Express 5 spelling of the old `'*'`: the braces keep the
+// root path (`/`) matching too, which the SPA depends on.
+app.get('/{*splat}', (req, res, next) => {
   if (/^\/(api|dl|media)(\/|$)/.test(req.path)) return next();
   if (!hasSpa) return res.status(503).send('Frontend build not found.');
   if (spaShell) {
@@ -229,13 +238,14 @@ try {
 await generatePwaIcons({ faviconPath: config.faviconPath, outDir: pwaDir });
 await generatePwaManifest({
   title: config.title,
+  langTag: config.langTag,
   templatePath: path.join(env.publicDir, MANIFEST_FILE),
   outDir: pwaDir,
 });
 
-// Bake that same title into the shell the SPA is served from.
+// Bake that same branding into the shell the SPA is served from.
 if (hasSpa) {
-  spaShell = withTitle(fs.readFileSync(spaShellPath, 'utf8'), config.title);
+  spaShell = withBranding(fs.readFileSync(spaShellPath, 'utf8'), config);
 }
 
 await store.load();

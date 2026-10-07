@@ -1,6 +1,6 @@
 # biangbiang —— 进阶部署指南（Docker + nginx + HTTPS）
 
-**简体中文** · [English](ADVANCED_INSTRUCTION_en_US.md)
+**简体中文** · [繁體中文](ADVANCED_INSTRUCTION_zh_TW.md) · [English](ADVANCED_INSTRUCTION_en_US.md) · [Polski](ADVANCED_INSTRUCTION_pl_PL.md) · [Русский](ADVANCED_INSTRUCTION_ru_RU.md) · [Svenska](ADVANCED_INSTRUCTION_sv_SE.md)
 
 本指南将带你从一台全新的 Linux 服务器，一步步走到**通过 nginx 反向代理对外提供 HTTPS 服务的 biangbiang 实例**。
 
@@ -116,6 +116,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>我的镜像站</title>
+<lang>zh_cn</lang>
 <sortable>true</sortable>
 <accent>volcano</accent>
 <font>assets/MyFont.woff2</font>
@@ -138,6 +139,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 | 标签 | 位置 | 是否必填 | 行为 |
 |---|---|---|---|
 | `<title>` | 根节点 | 否 | 页头、浏览器标签页以及**安装后的应用名**显示的站点标题。缺省时回退为 `Releases`。 |
+| `<lang>` | 根节点 | 否 | 界面语言，取 `zh_cn` / `zh_tw` / `en_us` / `pl_pl` / `ru_ru` / `sv_se` 之一（大小写不敏感，也接受 `zh-CN` 这种连字符写法）。整套界面文案、日期格式以及 Ant Design 组件自带的文案都会随之切换。缺省或填了无法识别的值时回退为 `zh_cn`（简体中文）。 |
 | `<favicon>` | 根节点 | 否 | 用作站点 favicon 的 PNG/WEBP，**同时**是可安装 PWA 图标的生成源。缺省时使用内置的默认图标。 |
 | `<sortable>` | 根节点 | 否 | 只接受 `true` / `false`（大小写不敏感）。设为 `true` 时页头会出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认按名称（字母顺序）；`false`、写错或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>` | 根节点 | 否 | Ant Design [基础色板](https://ant.design/docs/spec/colors) 的色名，取 `red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta` 之一（大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或写成无法识别的值时一律回退为默认蓝色——不会报错，也不会让站点失去配色。 |
@@ -576,7 +578,7 @@ git checkout "$(git tag --sort=-v:refname | head -1)"   # 最新的 release 标�
 docker compose up -d --build
 ```
 
-> 检出标签后处于 detached HEAD 状态，这对部署没有影响。想固定在某个具体版本，把 `"$(...)"` 换成 `v1.0.1` 这样的标签名即可。
+> 检出标签后处于 detached HEAD 状态，这对部署没有影响。想固定在某个具体版本，把 `"$(...)"` 换成 `v1.0.2` 这样的标签名即可。
 
 如果部署的是 **git 开发版**（`main` 分支），改用 `git pull` 即可：
 

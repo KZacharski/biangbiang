@@ -56,6 +56,36 @@ export const ACCENTS = {
 export const DEFAULT_ACCENT = ACCENTS.blue;
 
 /**
+ * The interface languages the frontend ships, in the order they are offered.
+ * `<lang>` accepts these codes and nothing else; anything missing or
+ * unrecognised falls back to Simplified Chinese, which is what the interface
+ * used before `<lang>` existed.
+ */
+export const LANGS = ['zh_cn', 'zh_tw', 'en_us', 'pl_pl', 'ru_ru', 'sv_se'];
+
+/** The language used when `<lang>` is absent or unrecognised. */
+export const DEFAULT_LANG = 'zh_cn';
+
+/**
+ * BCP-47 tags for each language. The backend only needs them for the `<html
+ * lang>` attribute it bakes into the SPA shell and for the web app manifest;
+ * the frontend keeps its own copy for `Intl` formatting.
+ */
+export const LANG_TAGS = {
+  zh_cn: 'zh-CN',
+  zh_tw: 'zh-TW',
+  en_us: 'en-US',
+  pl_pl: 'pl-PL',
+  ru_ru: 'ru-RU',
+  sv_se: 'sv-SE',
+};
+
+/** The BCP-47 tag for a `<lang>` value; falls back to the default language. */
+export function langTag(lang) {
+  return Object.hasOwn(LANG_TAGS, lang) ? LANG_TAGS[lang] : LANG_TAGS[DEFAULT_LANG];
+}
+
+/**
  * Always return an array, so any number of `<project>` nodes is handled.
  */
 function toArray(value) {
@@ -132,7 +162,7 @@ export function parseRepo(input) {
  * Load and normalize config.xml.
  *
  * @param {string} configPath absolute path to config.xml
- * @returns {{title:string, sortable:boolean, accent:string, font:string|null, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
+ * @returns {{title:string, lang:string, sortable:boolean, accent:string, font:string|null, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
  */
 export function loadConfig(configPath) {
   const dir = path.dirname(configPath);
@@ -154,6 +184,12 @@ export function loadConfig(configPath) {
   // `<accent>constructor</accent>` and `Object.prototype` for `__proto__`.
   const accentName = asText(root.accent).toLowerCase();
   const accent = Object.hasOwn(ACCENTS, accentName) ? ACCENTS[accentName] : DEFAULT_ACCENT;
+
+  // `<lang>en_us</lang>` picks the interface language. Codes are matched
+  // case-insensitively and accept a hyphen as well as an underscore, so
+  // `zh-CN` works too; anything else falls back to Simplified Chinese.
+  const langName = asText(root.lang).toLowerCase().replace(/-/g, '_');
+  const lang = LANGS.includes(langName) ? langName : DEFAULT_LANG;
 
   const projects = [];
   const seen = new Set();
@@ -224,6 +260,8 @@ export function loadConfig(configPath) {
 
   return {
     title,
+    lang,
+    langTag: langTag(lang),
     sortable,
     accent,
     font,

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const EMPTY_STATE = {
   title: 'Releases',
+  lang: 'zh_cn',
   sortable: false,
   accent: '#1677ff',
   font: null,

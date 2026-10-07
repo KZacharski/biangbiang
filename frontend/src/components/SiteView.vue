@@ -81,7 +81,7 @@ import ProjectCard from './ProjectCard.vue';
 import ThemeSwitcher from './ThemeSwitcher.vue';
 import { fetchState, formatDate, triggerRefresh, type Project, type SiteState } from '../api';
 import { layoutCards } from '../masonry';
-import { REPO_URL, strings } from '../strings';
+import { REPO_URL, localeTag, setLocale, strings } from '../strings';
 import { setAccent, setFont, useTheme } from '../theme';
 
 const { message } = App.useApp();
@@ -104,12 +104,14 @@ type SortKey = 'name' | 'updated' | 'mostAssets' | 'leastAssets';
 /** Alphabetical is the default the moment `<sortable>` is enabled. */
 const sortKey = ref<SortKey>('name');
 
-const sortOptions: { label: string; value: SortKey }[] = [
+// Computed rather than a plain array: the language arrives with /api/state,
+// which lands after this component has been set up.
+const sortOptions = computed<{ label: string; value: SortKey }[]>(() => [
   { label: strings.sortByName, value: 'name' },
   { label: strings.sortByUpdated, value: 'updated' },
   { label: strings.sortByMostAssets, value: 'mostAssets' },
   { label: strings.sortByLeastAssets, value: 'leastAssets' },
-];
+]);
 
 /** Sortable timestamp; a missing or unusable date ranks below every real one. */
 function timestamp(iso: string | null): number {
@@ -122,7 +124,7 @@ function timestamp(iso: string | null): number {
 function sortProjects(list: Project[], key: SortKey): Project[] {
   const sorted = [...list];
   if (key === 'name') {
-    return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans'));
+    return sorted.sort((a, b) => a.name.localeCompare(b.name, localeTag.value));
   }
   if (key === 'updated') {
     return sorted.sort((a, b) => timestamp(b.publishedAt) - timestamp(a.publishedAt));
@@ -148,7 +150,9 @@ async function load() {
   try {
     const next = await fetchState();
     state.value = next;
-    // The accent and font live in config.xml, so they can change between polls.
+    // The language, accent and font all live in config.xml, so they can change
+    // between polls.
+    setLocale(next.lang);
     setAccent(next.accent);
     setFont(next.font);
     loadError.value = false;

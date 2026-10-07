@@ -1,6 +1,6 @@
 # biangbiang
 
-[简体中文](README.md) · **English**
+[简体中文](README.md) · [繁體中文](README_zh_TW.md) · **English** · [Polski](README_pl_PL.md) · [Русский](README_ru_RU.md) · [Svenska](README_sv_SE.md)
 
 ![100% SLOP — but this badge is human-made](.github/assets/slop_badge.webp)
 
@@ -51,7 +51,7 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Installable as a PWA** (manifest + service worker) — with **no offline
   caching**, by design. The app name follows `<title>`; the icons follow
   `<favicon>`.
-- **Simplified Chinese (zh-Hans)** interface, with hardcoded copy.
+- **Multilingual interface**: set `<lang>` to one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` and the entire interface — copy, date formats, and the text Ant Design renders inside its own components — switches to that language. Omit it, or use an unrecognised value, and the site stays in Simplified Chinese.
 - **Responsive card grid** — one column on phones, two on tablets, three on
   desktop. Every card is sized to its own content and is never stretched to
   match the tallest card in its row. A short card also floats up into the free
@@ -143,6 +143,7 @@ alongside it or in the `assets/` subdirectory.
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>Page title</title>
+<lang>zh_cn</lang>
 <sortable>true</sortable>
 <accent>volcano</accent>
 <font>assets/MyFont.woff2</font>
@@ -163,6 +164,7 @@ alongside it or in the `assets/` subdirectory.
 | Tag          | Location     | Description |
 |--------------|----------------|------|
 | `<title>`    | root         | Site title, shown in the header, the browser tab, and as the **installed app's name** (written into the manifest at every launch). |
+| `<lang>`     | root         | Optional. Interface language: one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` (case-insensitive; a hyphen works too, so `zh-CN` is accepted). Omitted, empty or unrecognised values fall back to `zh_cn` (Simplified Chinese). |
 | `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
 | `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets — name (alphabetical) is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
 | `<accent>`   | root         | Optional. Name of an Ant Design base palette — `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values all fall back to the default blue. |
@@ -343,7 +345,7 @@ docker compose up -d --build
 
 > Checking out a tag leaves you in a detached HEAD state, which makes no
 > difference to a deployment. To pin a specific version, replace `"$(...)"` with
-> a tag name such as `v1.0.1`.
+> a tag name such as `v1.0.2`.
 
 On the **git development version** (`main`), `git pull` is still what you want:
 

@@ -10,17 +10,20 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import { strings } from '../strings';
 import type { ThemeMode } from '../theme';
 
 defineProps<{ mode: ThemeMode }>();
 const emit = defineEmits<{ (event: 'update:mode', value: ThemeMode): void }>();
 
-const options = [
+// Computed because the language arrives with /api/state, after setup.
+const options = computed(() => [
   { label: strings.themeAuto, value: 'auto' },
   { label: strings.themeLight, value: 'light' },
   { label: strings.themeDark, value: 'dark' },
-];
+]);
 
 function onChange(value: string | number) {
   const next = value as ThemeMode;
