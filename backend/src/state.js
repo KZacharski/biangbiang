@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const EMPTY_STATE = {
   title: 'Releases',
+  sortable: false,
   favicon: null,
   lastUpdated: null,
   lastChecked: null,

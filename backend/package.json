@@ -1,6 +1,6 @@
 {
   "name": "biangbiang-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "Mirrors artifacts from the latest GitHub release of each configured project and serves the web frontend.",

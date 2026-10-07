@@ -32,6 +32,12 @@ export const strings = {
   checkIntervalHint: '每 24 小时自动检查更新',
   poweredBy: (version: string) => `由 biangbiang ${version} 提供支持`,
 
+  sortLabel: '排序方式',
+  sortByName: '按名称',
+  sortByUpdated: '最近更新',
+  sortByMostAssets: '文件最多',
+  sortByLeastAssets: '文件最少',
+
   themeLabel: '主题',
   themeAuto: '跟随系统',
   themeLight: '浅色',

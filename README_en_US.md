@@ -29,12 +29,18 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Fully configuration-driven**: title, favicon, and each project's
   icon/name/repository all come from `config.xml`; icons are PNG/WEBP files that
   you supply yourself.
+- **Optional card sorting**: set `<sortable>true</sortable>` and a sort dropdown
+  appears in the header, letting visitors re-order the cards by name, last
+  updated, most assets or least assets. With `false` (or the tag omitted) the
+  cards keep the exact order of `config.xml`.
 - **Light / dark theme**, defaulting to "follow system", with manual overrides.
   Implemented with Ant Design Vue design tokens.
 - **Installable as a PWA** (manifest + service worker) — with **no offline
   caching**, by design.
 - **Simplified Chinese (zh-Hans)** interface, with hardcoded copy.
-- **Mobile-friendly** responsive layout.
+- **Responsive card grid** — one column on phones, two on tablets, three on
+  desktop. Every card is sized to its own content and is never stretched to
+  match the tallest card in its row.
 - **Robust**: one broken or misspelled repository never takes the site down —
   a project that fails to sync keeps its last successfully mirrored data.
 
@@ -118,6 +124,7 @@ alongside it or in the `assets/` subdirectory.
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>Page title</title>
+<sortable>true</sortable>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -132,11 +139,12 @@ alongside it or in the `assets/` subdirectory.
 </project>
 ```
 
-| Tag | Location | Description |
-|-------------|----------------|------|
-| `<title>`   | root         | Site title, shown in the header and the browser tab. |
-| `<favicon>` | root         | Optional. PNG/WEBP file used as the site favicon. |
-| `<project>` | root (0..N)  | One entry per project → one card on the site. |
+| Tag          | Location     | Description |
+|--------------|----------------|------|
+| `<title>`    | root         | Site title, shown in the header and the browser tab. |
+| `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
+| `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
+| `<project>`  | root (0..N)  | One entry per project → one card on the site. |
 | `<icon>`    | inside a project | PNG/WEBP file used as the card icon. Optional. |
 | `<name>`    | inside a project | Project display name. |
 | `<repo>`    | inside a project | GitHub repository URL. |

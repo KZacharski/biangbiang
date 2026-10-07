@@ -16,6 +16,15 @@
         </div>
 
         <div class="rm-actions">
+          <a-select
+            v-if="sortable"
+            v-model:value="sortKey"
+            class="rm-sort"
+            size="small"
+            :options="sortOptions"
+            :aria-label="strings.sortLabel"
+            :title="strings.sortLabel"
+          />
           <a-button size="small" :loading="refreshing" @click="onRefresh">
             <template #icon><reload-outlined /></template>
             {{ refreshing ? strings.refreshing : strings.refresh }}
@@ -43,11 +52,9 @@
 
       <a-empty v-else-if="projects.length === 0" :description="strings.noProjects" />
 
-      <a-row v-else :gutter="[16, 16]">
-        <a-col v-for="project in projects" :key="project.id" :xs="24" :sm="24" :md="12" :lg="8">
-          <project-card :project="project" />
-        </a-col>
-      </a-row>
+      <div v-else class="rm-grid">
+        <project-card v-for="project in projects" :key="project.id" :project="project" />
+      </div>
     </main>
 
     <footer class="rm-footer">
@@ -89,7 +96,46 @@ const loadError = ref(false);
 const refreshing = ref(false);
 const faviconBroken = ref(false);
 
-const projects = computed<Project[]>(() => state.value?.projects ?? []);
+/** How the visitor ordered the cards. Only offered when `<sortable>` is on. */
+type SortKey = 'name' | 'updated' | 'mostAssets' | 'leastAssets';
+
+const sortKey = ref<SortKey>('name');
+
+const sortOptions: { label: string; value: SortKey }[] = [
+  { label: strings.sortByName, value: 'name' },
+  { label: strings.sortByUpdated, value: 'updated' },
+  { label: strings.sortByMostAssets, value: 'mostAssets' },
+  { label: strings.sortByLeastAssets, value: 'leastAssets' },
+];
+
+/** Sortable timestamp; a missing or unusable date ranks below every real one. */
+function timestamp(iso: string | null): number {
+  if (!iso) return -1;
+  const value = new Date(iso).getTime();
+  return Number.isNaN(value) ? -1 : value;
+}
+
+/** A sorted copy of `list`. Items of equal rank keep their config.xml order. */
+function sortProjects(list: Project[], key: SortKey): Project[] {
+  const sorted = [...list];
+  if (key === 'name') {
+    return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans'));
+  }
+  if (key === 'updated') {
+    return sorted.sort((a, b) => timestamp(b.publishedAt) - timestamp(a.publishedAt));
+  }
+  const direction = key === 'mostAssets' ? -1 : 1;
+  return sorted.sort((a, b) => direction * (a.assets.length - b.assets.length));
+}
+
+const sortable = computed(() => state.value?.sortable === true);
+
+const projects = computed<Project[]>(() => {
+  const list = state.value?.projects ?? [];
+  // With `<sortable>false</sortable>` the cards keep the order of config.xml.
+  return sortable.value ? sortProjects(list, sortKey.value) : list;
+});
+
 const title = computed(() => state.value?.title || strings.appTitleFallback);
 const faviconUrl = computed(() => (faviconBroken.value ? null : state.value?.favicon ?? null));
 const updatedText = computed(() => formatDate(state.value?.lastUpdated ?? null) || strings.never);

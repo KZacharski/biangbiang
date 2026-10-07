@@ -1,5 +1,6 @@
 <favicon>assets/favicon.png</favicon>
 <title>测试镜像站点</title>
+<sortable>true</sortable>
 <project>
     <icon>assets/icon1.png</icon>
     <name>Shizuku</name>

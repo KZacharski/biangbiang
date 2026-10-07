@@ -99,12 +99,38 @@ body {
   flex-wrap: wrap;
 }
 
+.rm-sort {
+  min-width: 108px;
+}
+
 .rm-content {
   flex: 1 1 auto;
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
   padding: 20px 16px 32px;
+}
+
+/* Card grid: one column on phones, two on tablets, three on desktop. Items are
+   aligned to `start` rather than stretched, so every card is exactly as tall as
+   its own content - a short card is never padded out to match a tall neighbour. */
+.rm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .rm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .rm-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .rm-footer {
@@ -133,16 +159,13 @@ body {
 /* -------------------------------------------------------------- cards -- */
 
 .rm-card {
-  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* Ant Design Vue wraps the slot content in `.ant-card-body`, so the flex column
-   above only stretches that wrapper. Making it a full-height flex column too
-   lets `.rm-card__body` absorb the leftover height, which pins the footer to
-   the bottom - so the release date and repository link line up across a row of
-   cards whose contents have different heights. */
+/* Ant Design Vue wraps the slot content in `.ant-card-body`. Keeping both the
+   card and that wrapper as flex columns lets the body and footer stack
+   predictably; the grid above no longer stretches cards, so nothing grows. */
 .rm-card > .ant-card-body {
   flex: 1 1 auto;
   display: flex;

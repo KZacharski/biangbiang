@@ -244,6 +244,7 @@ export function createMirror({ configPath, releasesDir, store, concurrency = 4, 
       const now = new Date().toISOString();
       store.set({
         title: config.title,
+        sortable: config.sortable,
         favicon: config.favicon,
         lastUpdated: now,
         lastChecked: now,

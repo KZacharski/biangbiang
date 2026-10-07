@@ -122,6 +122,7 @@ you can edit it and restart without rebuilding the image.
 ```xml
 <favicon>assets/favicon.png</favicon>
 <title>My Mirror</title>
+<sortable>true</sortable>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -142,7 +143,8 @@ you can edit it and restart without rebuilding the image.
 |---|---|---|---|
 | `<title>` | root | no | Site title in the header and the browser tab. Falls back to `Releases`. |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
-| `<project>` | root (0..N) | — | One card on the site. Add as many as you like — the layout is fully flexible. |
+| `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
+| `<project>` | root (0..N) | — | One card on the site. Add as many as you like — they flow into 1 / 2 / 3 columns depending on the screen width, and every card is only as tall as its own content. |
 | `<icon>` | inside `<project>` | no | Card thumbnail (PNG/WEBP). If omitted or broken, the card shows the project's first letter instead. |
 | `<name>` | inside `<project>` | no | Display name. Falls back to the repository name. |
 | `<repo>` | inside `<project>` | **yes** | GitHub repository. A `<project>` without a valid `<repo>` is silently skipped. |
@@ -573,6 +575,8 @@ Then open `https://mirror.example.com` in a browser:
 - One card per `<project>`, each with the version tag and one button per asset.
 - "查看原仓库" (view original repo) links back to GitHub.
 - The theme switcher offers 跟随系统 / 浅色 / 深色 (system / light / dark).
+- With `<sortable>true</sortable>` set, a sort dropdown appears in the header
+  (by name / last updated / most assets / least assets).
 
 ### Installing as a PWA
 

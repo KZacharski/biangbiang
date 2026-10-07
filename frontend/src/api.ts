@@ -23,6 +23,8 @@ export interface Project {
 
 export interface SiteState {
   title: string;
+  /** Whether visitors may re-sort the cards (config.xml `<sortable>`). */
+  sortable: boolean;
   favicon: string | null;
   lastUpdated: string | null;
   lastChecked: string | null;

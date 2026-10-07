@@ -21,6 +21,17 @@ function asText(value) {
 }
 
 /**
+ * Read a boolean flag. Only the literal strings `true` and `false` are
+ * meaningful; anything else - including a missing tag - falls back.
+ */
+function asBool(value, fallback) {
+  const text = asText(value).toLowerCase();
+  if (text === 'true') return true;
+  if (text === 'false') return false;
+  return fallback;
+}
+
+/**
  * Always return an array, so any number of `<project>` nodes is handled.
  */
 function toArray(value) {
@@ -85,7 +96,7 @@ export function parseRepo(input) {
  * Load and normalize config.xml.
  *
  * @param {string} configPath absolute path to config.xml
- * @returns {{title:string, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
+ * @returns {{title:string, sortable:boolean, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
  */
 export function loadConfig(configPath) {
   const dir = path.dirname(configPath);
@@ -94,6 +105,10 @@ export function loadConfig(configPath) {
 
   const title = asText(root.title) || 'Releases';
   const faviconRel = normalizeRel(asText(root.favicon) || '');
+
+  // `<sortable>true</sortable>` lets visitors re-sort the cards in the browser.
+  // Left out (or false), the cards keep the order of the `<project>` entries.
+  const sortable = asBool(root.sortable, false);
 
   const projects = [];
   const seen = new Set();
@@ -153,6 +168,7 @@ export function loadConfig(configPath) {
 
   return {
     title,
+    sortable,
     favicon: faviconRel ? `/media/${faviconRel}` : null,
     faviconPath: faviconRel ? path.resolve(dir, faviconRel) : null,
     projects,
