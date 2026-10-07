@@ -135,12 +135,33 @@ body {
 
 /* Card grid: one column on phones, two on tablets, three on desktop. Items are
    aligned to `start` rather than stretched, so every card is exactly as tall as
-   its own content - a short card is never padded out to match a tall neighbour. */
+   its own content - a short card is never padded out to match a tall neighbour.
+
+   That alone leaves dead space under the short card, because CSS Grid still
+   aligns rows: the next row starts below the tallest card of the previous one,
+   so a column whose card is shorter shows a wider gap than the 16px gutter.
+   Grid Lanes is Grid with the row alignment taken out - each card is placed in a
+   lane and the lanes stack independently - so the gutter is all the space there
+   is. It is declared after `display: grid`, so engines that do not know the
+   value ignore that line and keep the plain grid above; Chrome and Firefox still
+   keep Grid Lanes behind a flag.
+
+   On its own Grid Lanes packs each card into whichever lane is emptiest, which
+   shuffles a sorted list: at the 1em default a card here changed lanes purely
+   because its neighbour's card was 31px taller, which put WallCat ahead of
+   Shizuku. `flow-tolerance` sets how big that difference must be before a card
+   may move - anything smaller counts as a tie and the card stays in reading
+   order. 4rem covers the height differences this content actually produces (a
+   download button, a line of error text) while still letting a genuinely short
+   lane catch up. Raise it to hold the sorted order more tightly, lower it to
+   even the columns out more. */
 .rm-grid {
   display: grid;
+  display: grid-lanes;
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+  flow-tolerance: 4rem;
 }
 
 @media (min-width: 768px) {
