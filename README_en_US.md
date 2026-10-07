@@ -48,9 +48,10 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Simplified Chinese (zh-Hans)** interface, with hardcoded copy.
 - **Responsive card grid** — one column on phones, two on tablets, three on
   desktop. Every card is sized to its own content and is never stretched to
-  match the tallest card in its row. Browsers with Grid Lanes (Safari 26.4+)
-  also float a short card up into the free space, so cards stay exactly 16px
-  apart; other browsers keep the row aligned and leave that space empty.
+  match the tallest card in its row. A short card also floats up into the free
+  space beneath it, so cards stay exactly 16px apart: Safari 26.4+ does this
+  natively with Grid Lanes, and the frontend lays the cards out itself anywhere
+  else.
 - **Robust**: one broken or misspelled repository never takes the site down —
   a project that fails to sync keeps its last successfully mirrored data.
 

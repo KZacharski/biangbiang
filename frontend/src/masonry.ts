@@ -21,12 +21,23 @@ const hasLanes = typeof CSS !== 'undefined' && CSS.supports('display', 'grid-lan
 /** Added only once the cards have been placed, so a throw leaves the grid be. */
 const ACTIVE_CLASS = 'rm-grid--measured';
 
-/** Used when the browser cannot report `flow-tolerance`; mirrors the 4rem in styles.css. */
+/**
+ * Used when the browser cannot report `flow-tolerance` at all; mirrors the 4rem
+ * in styles.css.
+ */
 const FALLBACK_TOLERANCE = 64;
 
-function toPx(value: string, fallback = 0): number {
+/**
+ * Resolves a length to pixels. A browser that has not implemented
+ * `flow-tolerance` hands the length back as it was specified rather than
+ * resolved, so `4rem` arrives intact and has to be scaled by the root font size -
+ * without this it would read as 4px and the card order would shuffle.
+ */
+function toPx(value: string, fallback = 0, rootSize = 16): number {
   const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
+  if (!Number.isFinite(parsed)) return fallback;
+  if (value.endsWith('rem') || value.endsWith('em')) return parsed * rootSize;
+  return parsed;
 }
 
 /** Hands the grid back to the browser, inline styles and all. */
@@ -57,12 +68,17 @@ export function layoutCards(grid: HTMLElement | null): void {
   release(grid, cards);
 
   const style = window.getComputedStyle(grid);
-  const gap = toPx(style.columnGap);
-  const rowGap = toPx(style.rowGap);
-  const tolerance = toPx(style.getPropertyValue('flow-tolerance'), FALLBACK_TOLERANCE);
+  const rootSize = toPx(window.getComputedStyle(document.documentElement).fontSize, 16);
+  const gap = toPx(style.columnGap, 0, rootSize);
+  const rowGap = toPx(style.rowGap, 0, rootSize);
+  const tolerance = toPx(style.getPropertyValue('flow-tolerance'), FALLBACK_TOLERANCE, rootSize);
 
-  const cardWidth = cards[0].offsetWidth;
-  const heights = cards.map((card) => card.offsetHeight);
+  // Read the boxes with `getBoundingClientRect` rather than `offsetWidth` /
+  // `offsetHeight`, which round to whole pixels. Rounding the lane width changes
+  // how the text wraps, so a card can come back a little taller or shorter than
+  // the height measured here.
+  const cardWidth = cards[0].getBoundingClientRect().width;
+  const heights = cards.map((card) => card.getBoundingClientRect().height);
 
   // Phones are a single lane, which already stacks without gaps.
   const laneCount = cardWidth > 0 ? Math.round((grid.clientWidth + gap) / (cardWidth + gap)) : 1;
