@@ -582,6 +582,9 @@ Then open `https://mirror.example.com` in a browser:
 - With `<accent>` set (e.g. `<accent>volcano</accent>`), the elements that were
   blue — the version tag, the "view original repo" link and so on — take that
   colour instead. Left unset, they stay the default blue.
+- Pinch-zoom is disabled, so the page no longer zooms as a whole. Scrolling and
+  panning still work normally, and zoom from the browser menu or from system
+  accessibility settings is unaffected.
 
 ### Installing as a PWA
 

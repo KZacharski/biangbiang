@@ -521,6 +521,7 @@ curl -sI "https://mirror.example.com/dl/<owner>/<repo>/<version>/<file>" | head 
 - 主题切换器提供「跟随系统 / 浅色 / 深色」三档。
 - 若设置了 `<sortable>true</sortable>`，页头会出现排序下拉框（按名称 / 最近更新 / 文件最多 / 文件最少）。
 - 若设置了 `<accent>`（如 `<accent>volcano</accent>`），版本标签、「查看原仓库」链接等原本为蓝色的元素会变成该颜色；未设置时保持默认蓝色。
+- 页面已禁用双指缩放，整体不再能放大缩小，滚动与左右/上下滑动不受影响；浏览器菜单或系统辅助功能里的缩放仍然可用。
 
 ### 安装为 PWA
 

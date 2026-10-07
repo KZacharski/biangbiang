@@ -37,6 +37,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ----------------------------------------------------------------- zoom -- */
+
+/*
+ * The site is meant to feel like an app, so browser zoom is switched off.
+ * `user-scalable=no` in the viewport meta covers Android, but modern iOS Safari
+ * has ignored it since iOS 10 - `touch-action` is the only thing that still
+ * works there. `pan-x pan-y` keeps normal scrolling and drops pinch-zoom and
+ * double-tap zoom, which is exactly the trade we want.
+ *
+ * Ant Design's reset gives interactive elements `touch-action: manipulation`,
+ * and that rule outranks a bare universal selector, so `!important` is doing
+ * real work here rather than papering over a mistake - without it every button
+ * and link would still be pinchable.
+ */
+* {
+  touch-action: pan-x pan-y !important;
+}
+
 /* ------------------------------------------------------------- layout -- */
 
 .rm-page {
