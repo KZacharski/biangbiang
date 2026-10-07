@@ -94,7 +94,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 | `config.xml` | 站点配置（以只读方式挂载进容器）。 |
 | `overwrite.xml` | 手动条目（非 GitHub 项目），只读挂载。仅当 `config.xml` 里用到 `overwrite@<数字>` 时才会被读取。 |
 | `assets/` | 你的 favicon 与各项目图标（只读挂载）。 |
-| `data/` | 镜像产物、`state.json`、生成的 PWA 图标。**请务必备份。** |
+| `data/` | 镜像产物、`state.json`、生成的 PWA 图标与 manifest。**请务必备份。** |
 
 ---
 
@@ -132,7 +132,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 
 | 标签 | 位置 | 是否必填 | 行为 |
 |---|---|---|---|
-| `<title>` | 根节点 | 否 | 页头与浏览器标签页显示的站点标题。缺省时回退为 `Releases`。 |
+| `<title>` | 根节点 | 否 | 页头、浏览器标签页以及**安装后的应用名**显示的站点标题。缺省时回退为 `Releases`。 |
 | `<favicon>` | 根节点 | 否 | 用作站点 favicon 的 PNG/WEBP，**同时**是可安装 PWA 图标的生成源。缺省时使用内置的默认图标。 |
 | `<sortable>` | 根节点 | 否 | 只接受 `true` / `false`（大小写不敏感）。设为 `true` 时页头会出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认按名称（字母顺序）；`false`、写错或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>` | 根节点 | 否 | Ant Design [基础色板](https://ant.design/docs/spec/colors) 的色名，取 `red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta` 之一（大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或写成无法识别的值时一律回退为默认蓝色——不会报错，也不会让站点失去配色。 |
@@ -269,7 +269,7 @@ cp ~/my-logo.png /srv/biangbiang/assets/favicon.png
   | `pwa-maskable-512x512.png` | 512×512 | Android 自适应图标，图案缩放到 80%，背景填充为图片的平均色 |
   | `apple-touch-icon.png` | 180×180 | iOS 主屏幕图标（平铺到白色背景） |
 
-  它们会被写入 `data/pwa/` 并由后端对外提供，**不需要**提交到仓库。
+  它们会被写入 `data/pwa/` 并由后端对外提供，**不需要**提交到仓库。同一目录下的 `manifest.webmanifest` 同样是每次启动时由 `<title>` 重新生成的——其中的 `name` / `short_name` 就是安装后显示的应用名，其余字段沿用前端构建产物中的模板。
 
 ### 2. 项目图标
 
@@ -285,7 +285,7 @@ cp ~/project2-logo.webp  /srv/biangbiang/assets/icon2.webp
 
 ### 3. 让改动生效
 
-素材是只读挂载的，容器会立刻看到新文件——但 **PWA 图标只在启动时重新生成**：
+素材是只读挂载的，容器会立刻看到新文件——但 **PWA 图标与应用名只在启动时重新生成**：
 
 ```bash
 cd /srv/biangbiang
@@ -349,7 +349,7 @@ curl -s http://127.0.0.1:8080/api/health
 | `HOST` | `0.0.0.0` | 监听地址。 |
 | `TZ` | `Asia/Shanghai` | 容器时区（IANA 名称）。影响日志与后端渲染的本地时间。可在 `docker-compose.yml` 或 `.env` 中修改。 |
 | `CONFIG_PATH` | `/app/config.xml` | `config.xml` 的位置。 |
-| `DATA_DIR` | `/app/data` | 镜像产物 + `state.json` + 生成的 PWA 图标。 |
+| `DATA_DIR` | `/app/data` | 镜像产物 + `state.json` + 生成的 PWA 图标与 manifest。 |
 | `PUBLIC_DIR` | `/app/public` | 打包好的 SPA（已固化在镜像中）。 |
 | `CHECK_INTERVAL_HOURS` | `24` | 轮询间隔，最小 `0.05`（3 分钟）。 |
 | `MIRROR_ON_START` | `true` | 设为 `false` 可跳过启动时的首次同步。 |
@@ -619,6 +619,7 @@ docker compose up -d --force-recreate
 | 提示 `API rate limit exceeded` | 在 `.env` 中设置 `GITHUB_TOKEN`。 |
 | 卡片不显示图标 | `<icon>` 路径写错，或文件对 uid 1000 不可读。路径是相对 `config.xml` 解析的。 |
 | PWA 图标还是默认的 | `<favicon>` 缺失/不可读，或 ImageMagick 执行失败。查看 `docker compose logs \| grep '\[pwa\]'`，然后 `docker compose restart biangbiang`。 |
+| 安装后的应用名还是默认的 | `manifest.webmanifest` 由 `<title>` 在启动时生成。确认 `config.xml` 里的 `<title>` 正确，然后 `docker compose restart biangbiang`。日志中出现 `[pwa] cannot read` 说明前端构建产物缺少 manifest 模板。 |
 | `./data` 报 `EACCES` / `permission denied` | 容器无法写入数据目录。只要容器以 root 启动，entrypoint 就会自动修正属主，所以出现这个错误说明你设置了 `user:`／`--user`，或者把 `./data` 挂成了只读。执行 `sudo chown -R 1000:1000 ./data`，如果加了 `:ro` 就去掉它。 |
 | `http://127.0.0.1:8080` 正常，但域名访问不了 | 检查 nginx 的 `proxy_pass` 目标、`server_name`，以及防火墙是否放行了 80/443 端口。 |
 | 下载中途断开 | 调大 nginx 配置中的 `proxy_read_timeout` / `proxy_send_timeout`。 |

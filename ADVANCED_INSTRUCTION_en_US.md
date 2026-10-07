@@ -107,7 +107,7 @@ Four paths matter from here on:
 | `config.xml` | Your site configuration (mounted read-only). |
 | `overwrite.xml` | Manual (non-GitHub) projects, mounted read-only. Only read if `config.xml` uses `overwrite@<number>`. |
 | `assets/` | Your favicon + project icons (mounted read-only). |
-| `data/` | Mirrored artifacts, `state.json`, generated PWA icons. **Back this up.** |
+| `data/` | Mirrored artifacts, `state.json`, generated PWA icons and manifest. **Back this up.** |
 
 ---
 
@@ -155,7 +155,7 @@ it for your own projects.
 
 | Tag | Where | Required | Behaviour |
 |---|---|---|---|
-| `<title>` | root | no | Site title in the header and the browser tab. Falls back to `Releases`. |
+| `<title>` | root | no | Site title in the header, the browser tab, and the **installed app's name**. Falls back to `Releases`. |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
 | `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
 | `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values fall back to the default blue — never an error, and the site is never left uncoloured. |
@@ -323,7 +323,10 @@ cp ~/my-logo.png /srv/biangbiang/assets/favicon.png
   | `apple-touch-icon.png` | 180×180 | iOS home screen (flattened onto white) |
 
   They are written to `data/pwa/` and served by the backend — you never commit
-  them.
+  them. The `manifest.webmanifest` in the same directory is regenerated from
+  `<title>` on every startup too: its `name` / `short_name` are the name shown
+  for the installed app, and its remaining fields come from the template in the
+  frontend build.
 
 ### 2. Project icons
 
@@ -342,7 +345,7 @@ cp ~/project2-logo.webp  /srv/biangbiang/assets/icon2.webp
 ### 3. Apply the changes
 
 Assets are mounted read-only, so the container sees them immediately — but the
-**PWA icons are only regenerated at startup**:
+**PWA icons and the app name are only regenerated at startup**:
 
 ```bash
 cd /srv/biangbiang
@@ -409,7 +412,7 @@ All of these are set in the `environment:` block of the Compose file.
 | `HOST` | `0.0.0.0` | Bind address. |
 | `TZ` | `Asia/Shanghai` | Container timezone (IANA name). Affects logs and backend-rendered local times. Override it in `docker-compose.yml` or `.env`. |
 | `CONFIG_PATH` | `/app/config.xml` | Location of `config.xml`. |
-| `DATA_DIR` | `/app/data` | Mirrored artifacts + `state.json` + generated PWA icons. |
+| `DATA_DIR` | `/app/data` | Mirrored artifacts + `state.json` + generated PWA icons and manifest. |
 | `PUBLIC_DIR` | `/app/public` | Built SPA (baked into the image). |
 | `CHECK_INTERVAL_HOURS` | `24` | Poll interval; minimum `0.05` (3 minutes). |
 | `MIRROR_ON_START` | `true` | Set to `false` to skip the initial sync on boot. |
@@ -715,6 +718,7 @@ i.e. 3 minutes) and recreate the container.
 | `API rate limit exceeded` | Set `GITHUB_TOKEN` in `.env`. |
 | Card shows no icon | `<icon>` path is wrong, or the file isn't readable by uid 1000. Paths resolve relative to `config.xml`. |
 | PWA icon is still the default | `<favicon>` is missing/unreadable, or ImageMagick failed. Check `docker compose logs \| grep '\[pwa\]'`, then `docker compose restart biangbiang`. |
+| The installed app name is still the default | `manifest.webmanifest` is generated from `<title>` at startup. Check the `<title>` in `config.xml`, then `docker compose restart biangbiang`. A `[pwa] cannot read` line in the logs means the frontend build is missing the manifest template. |
 | `EACCES` / `permission denied` on `./data` | The container could not write its data directory. It fixes ownership by itself whenever it starts as root, so this means you set `user:`/`--user`, or mounted `./data` read-only. `sudo chown -R 1000:1000 ./data`, and drop the `:ro` if you added one. |
 | Site works on `http://127.0.0.1:8080` but not through the domain | nginx `proxy_pass` target, `server_name`, or the firewall (ports 80/443 must be open). |
 | Download stops partway | Raise `proxy_read_timeout` / `proxy_send_timeout` in the nginx block. |

@@ -49,7 +49,8 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Light / dark theme**, defaulting to "follow system", with manual overrides.
   Implemented with Ant Design Vue design tokens.
 - **Installable as a PWA** (manifest + service worker) — with **no offline
-  caching**, by design.
+  caching**, by design. The app name follows `<title>`; the icons follow
+  `<favicon>`.
 - **Simplified Chinese (zh-Hans)** interface, with hardcoded copy.
 - **Responsive card grid** — one column on phones, two on tablets, three on
   desktop. Every card is sized to its own content and is never stretched to
@@ -99,7 +100,7 @@ biangbiang/
 ├── config.xml              # site config (mounted); ships with a working sample
 ├── overwrite.xml           # manual (non-GitHub) entries (mounted); sample ships too
 ├── assets/                 # favicon, project icons, font (mounted ro); sample ships
-├── data/                   # mirrored artifacts, state.json, generated PWA icons
+├── data/                   # mirrored artifacts, state.json, generated PWA icons + manifest
 ├── backend/                # Node.js + Express API / mirror engine
 │   └── src/
 │       ├── index.js        # HTTP server: SPA, /api, /media, /dl
@@ -109,6 +110,7 @@ biangbiang/
 │       ├── mirror.js       # mirror engine (compare, download, clean up)
 │       ├── overwrite.js    # parses overwrite.xml (manual entries)
 │       ├── pwaIcons.js     # derives PWA icons from the favicon with ImageMagick
+│       ├── pwaManifest.js  # derives the manifest's app name from <title>
 │       ├── scheduler.js    # the every-24-hours scheduled task
 │       ├── state.js        # in-memory + persisted state
 │       └── env.js          # environment variable configuration
@@ -160,7 +162,7 @@ alongside it or in the `assets/` subdirectory.
 
 | Tag          | Location     | Description |
 |--------------|----------------|------|
-| `<title>`    | root         | Site title, shown in the header and the browser tab. |
+| `<title>`    | root         | Site title, shown in the header, the browser tab, and as the **installed app's name** (written into the manifest at every launch). |
 | `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
 | `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets — name (alphabetical) is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
 | `<accent>`   | root         | Optional. Name of an Ant Design base palette — `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values all fall back to the default blue. |
@@ -316,7 +318,7 @@ docker run -d --name biangbiang -p 8080:8080 \
 
 ```bash
 docker compose logs -f          # follow the logs
-docker compose restart          # restart (regenerates the PWA icons)
+docker compose restart          # restart (regenerates the PWA icons and app name)
 docker compose down             # stop and remove the container
 ```
 
@@ -435,8 +437,9 @@ installed to the home screen or desktop. That service worker **performs no
 caching** — it is a pure network passthrough, so there is no offline mode by
 design.
 
-The installable **app icons always follow your `<favicon>`**. On every startup
-the backend derives the whole icon set from it with ImageMagick:
+The installable **app icons always follow your `<favicon>`**, and the **app's
+name always follows `<title>`**. On every startup the backend derives the whole
+icon set from the favicon with ImageMagick:
 
 | Output | Size | Description |
 |------|------|------|
@@ -446,11 +449,16 @@ the backend derives the whole icon set from it with ImageMagick:
 | `apple-touch-icon.png` | 180×180 | Flattened onto a white background (iOS does not support transparency) |
 
 The icons are written to `<DATA_DIR>/pwa/` and served at the paths declared in
-the manifest. So changing `<favicon>` in `config.xml` and restarting the
-container is all it takes to update the installable icons. The favicon can be
-any format ImageMagick can read (PNG, WEBP, …). If `<favicon>` is not configured,
-or ImageMagick is unavailable, the bundled default icons from `frontend/public/`
-are used instead.
+the manifest. On every startup the backend also regenerates
+`manifest.webmanifest` in the same directory, replacing its `name` / `short_name`
+(the name shown for the installed app) with the `<title>` from `config.xml`;
+every other field — description, colours, the icon list — is carried over from
+the template that ships with the frontend build. So changing `<favicon>` or
+`<title>` and restarting the container updates the installable icons and the app
+name. The favicon can be any format ImageMagick can read (PNG, WEBP, …). If
+`<favicon>` is not configured, or ImageMagick is unavailable, the bundled default
+icons from `frontend/public/` are used instead; if the manifest template cannot
+be read, the bundled default manifest is used in the same way.
 
 ImageMagick is already installed in the Docker image. For local development,
 install it yourself (`brew install imagemagick`, `apt install imagemagick`, …).

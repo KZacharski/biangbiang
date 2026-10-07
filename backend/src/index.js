@@ -9,6 +9,7 @@ import { createStateStore } from './state.js';
 import { createMirror } from './mirror.js';
 import { startScheduler } from './scheduler.js';
 import { generatePwaIcons, PWA_ICON_NAMES } from './pwaIcons.js';
+import { generatePwaManifest, MANIFEST_FILE } from './pwaManifest.js';
 
 const store = createStateStore(env.dataDir);
 const mirror = createMirror({
@@ -118,16 +119,17 @@ app.get('/dl/:owner/:repo/:version/:file', (req, res) => {
   return res.download(target, fileName);
 });
 
-/* ------------------------------------------------------------- app icons -- */
+/* ------------------------------------------------------------ app icons -- */
 
-// The installable PWA icons are generated from the configured favicon at
-// startup. Serve them here (before the static handler) and fall back to the
-// bundled defaults when generation was skipped or failed.
-const pwaIconDir = path.join(env.dataDir, 'pwa');
+// The installable PWA icons are derived from the configured favicon at startup,
+// and the manifest is rewritten from the configured title at the same time.
+// Serve both here (before the static handler) and fall back to the bundled
+// defaults when generation was skipped or failed.
+const pwaDir = path.join(env.dataDir, 'pwa');
 
 for (const name of PWA_ICON_NAMES) {
   app.get(`/${name}`, (_req, res, next) => {
-    const file = path.join(pwaIconDir, name);
+    const file = path.join(pwaDir, name);
     if (fs.existsSync(file)) {
       res.set('Cache-Control', 'public, max-age=300');
       return res.sendFile(file);
@@ -136,9 +138,56 @@ for (const name of PWA_ICON_NAMES) {
   });
 }
 
+// The manifest is what names the installed app, so it has to be revalidated on
+// every load rather than cached - the same rule the static handler applies to it.
+app.get(`/${MANIFEST_FILE}`, (_req, res, next) => {
+  const file = path.join(pwaDir, MANIFEST_FILE);
+  if (!fs.existsSync(file)) return next();
+  res.set('Cache-Control', 'no-cache');
+  return res.type('application/manifest+json').send(fs.readFileSync(file, 'utf8'));
+});
+
 /* ---------------------------------------------------------- static SPA -- */
 
-const hasSpa = fs.existsSync(path.join(env.publicDir, 'index.html'));
+const spaShellPath = path.join(env.publicDir, 'index.html');
+const hasSpa = fs.existsSync(spaShellPath);
+
+// Assigned once config.xml has been parsed, further down: the shell with the
+// configured <title> baked into it.
+let spaShell = null;
+
+/**
+ * Bake the configured title into the SPA shell.
+ *
+ * The built `index.html` carries the frontend's own placeholder name in both the
+ * `<title>` and the iOS home-screen label, so a deployment would otherwise show
+ * that name until `/api/state` answers - and keep showing it on the iOS home
+ * screen forever. Rewriting both here makes the very first paint correct. The
+ * replacers are functions so that a title containing `$&` or `$1` is inserted
+ * literally, and the title is escaped because it lands in HTML.
+ */
+function withTitle(html, title) {
+  const escaped = title
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  return html
+    .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escaped}</title>`)
+    .replace(
+      /(<meta\s+name="apple-mobile-web-app-title"\s+content=")[^"]*(")/,
+      (_match, open, close) => `${open}${escaped}${close}`,
+    );
+}
+
+// A direct hit on `/index.html` would otherwise be answered by the static
+// handler below with the un-rewritten shell, so route it through the same copy.
+app.get('/index.html', (_req, res, next) => {
+  if (!spaShell) return next();
+  res.set('Cache-Control', 'no-cache');
+  return res.type('html').send(spaShell);
+});
 
 app.use(
   express.static(env.publicDir, {
@@ -154,7 +203,11 @@ app.use(
 app.get('*', (req, res, next) => {
   if (/^\/(api|dl|media)(\/|$)/.test(req.path)) return next();
   if (!hasSpa) return res.status(503).send('Frontend build not found.');
-  return res.sendFile(path.join(env.publicDir, 'index.html'));
+  if (spaShell) {
+    res.set('Cache-Control', 'no-cache');
+    return res.type('html').send(spaShell);
+  }
+  return res.sendFile(spaShellPath);
 });
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
@@ -171,9 +224,19 @@ try {
   process.exit(1);
 }
 
-// The installable app icons always follow the user's favicon, so (re)generate
-// them from it with ImageMagick on every launch.
-await generatePwaIcons({ faviconPath: config.faviconPath, outDir: pwaIconDir });
+// The installable app icons always follow the user's favicon, and the installed
+// app's name always follows <title>, so both are (re)generated on every launch.
+await generatePwaIcons({ faviconPath: config.faviconPath, outDir: pwaDir });
+await generatePwaManifest({
+  title: config.title,
+  templatePath: path.join(env.publicDir, MANIFEST_FILE),
+  outDir: pwaDir,
+});
+
+// Bake that same title into the shell the SPA is served from.
+if (hasSpa) {
+  spaShell = withTitle(fs.readFileSync(spaShellPath, 'utf8'), config.title);
+}
 
 await store.load();
 

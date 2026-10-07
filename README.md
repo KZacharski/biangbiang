@@ -26,7 +26,7 @@
 - **可配置主题色**：`<accent>` 填 Ant Design [基础色板](https://ant.design/docs/spec/colors) 中的色名（如 `volcano`、`purple`），站点即用该色替代默认的品牌蓝；省略或写错时保持默认蓝色。
 - **可配置字体**：`<font>` 填字体文件路径（如 `.woff2`），站点整体——含 Ant Design 组件——都会改用该字体；路径与 `<favicon>` 一样相对于 `config.xml` 所在目录解析，省略或指向不存在的文件时保持系统默认字体。
 - **浅色 / 深色主题**，默认「跟随系统」，可手动切换为浅色或深色。基于 Ant Design Vue 的设计令牌实现。
-- **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**。
+- **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**；应用名跟随 `<title>`，图标跟随 `<favicon>`。
 - **简体中文（zh-Hans）**界面，文案硬编码。
 - **响应式卡片网格**：手机单列、平板双列、桌面三列，每张卡片各自独立高度，不会被拉伸到与同行最高的一张齐平。较矮的卡片还会上浮填满下方的空位，卡片之间始终只有 16px 的间距——Safari 26.4+ 走原生 Grid Lanes，其他浏览器由前端自行排版。
 - **健壮性**：某个仓库损坏或地址错误不会拖垮整个站点——同步失败的项目会保留上一次成功的数据。自带的样例配置刻意保留了两张失败卡片来演示这一点。
@@ -65,7 +65,7 @@ biangbiang/
 ├── config.xml              # 站点配置，自带可直接使用的样例（挂载进容器）
 ├── overwrite.xml           # 手动条目（非 GitHub 项目），自带样例（挂载进容器）
 ├── assets/                 # favicon、项目图标与字体，自带样例（挂载，只读）
-├── data/                   # 镜像产物、state.json、生成的 PWA 图标
+├── data/                   # 镜像产物、state.json、生成的 PWA 图标与 manifest
 ├── backend/                # Node.js + Express 的 API / 镜像引擎
 │   └── src/
 │       ├── index.js        # HTTP 服务：SPA、/api、/media、/dl
@@ -75,6 +75,7 @@ biangbiang/
 │       ├── mirror.js       # 镜像引擎（比对、下载、清理）
 │       ├── overwrite.js    # 解析 overwrite.xml（手动条目）
 │       ├── pwaIcons.js     # 用 ImageMagick 由 favicon 生成 PWA 图标
+│       ├── pwaManifest.js  # 由 <title> 生成 manifest（安装后的应用名）
 │       ├── scheduler.js    # 每 24 小时运行的定时任务
 │       ├── state.js        # 内存态 + 持久化状态
 │       └── env.js          # 环境变量配置
@@ -124,7 +125,7 @@ biangbiang/
 
 | 标签         | 位置           | 说明 |
 |--------------|----------------|------|
-| `<title>`    | 根节点         | 站点标题，显示在页头与浏览器标签页。 |
+| `<title>`    | 根节点         | 站点标题，显示在页头、浏览器标签页，以及**安装后的应用名**（每次启动时写入 manifest）。 |
 | `<favicon>`  | 根节点         | 可选。用作站点 favicon 的 PNG/WEBP 文件。 |
 | `<sortable>` | 根节点         | 可选。`true` 时页头出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认「按名称」（即字母顺序）；`false` 或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>`   | 根节点         | 可选。Ant Design 基础色板名（`red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta`，大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或填了无法识别的值时，一律回退为默认蓝色。 |
@@ -256,7 +257,7 @@ docker run -d --name biangbiang -p 8080:8080 \
 
 ```bash
 docker compose logs -f          # 查看实时日志
-docker compose restart          # 重启（会重新生成 PWA 图标）
+docker compose restart          # 重启（会重新生成 PWA 图标与应用名）
 docker compose down             # 停止并移除容器
 ```
 
@@ -364,7 +365,7 @@ cd frontend && npm run type-check
 ### PWA
 应用附带 `manifest.webmanifest` 与一个极简的 Service Worker，因此可以安装到主屏幕/桌面。该 Service Worker **不做任何缓存**——它是纯网络透传，因此按设计没有离线模式。
 
-可安装的**应用图标始终跟随你的 `<favicon>`**。每次启动时，后端都会用 ImageMagick 由它派生出整套图标：
+可安装的**应用图标始终跟随你的 `<favicon>`**，**应用名则始终跟随 `<title>`**。每次启动时，后端都会用 ImageMagick 由 favicon 派生出整套图标：
 
 | 输出 | 尺寸 | 说明 |
 |------|------|------|
@@ -373,7 +374,7 @@ cd frontend && npm run type-check
 | `pwa-maskable-512x512.png` | 512×512 | 图案缩放到 80%，背景填充为 favicon 的平均颜色 |
 | `apple-touch-icon.png` | 180×180 | 平铺到白色背景（iOS 不支持透明） |
 
-图标写入 `<DATA_DIR>/pwa/`，并通过 manifest 中声明的路径对外提供。因此修改 `config.xml` 中的 `<favicon>` 后重启容器，即可更新可安装图标。favicon 可以是 ImageMagick 能读取的任意格式（PNG、WEBP 等）。若未配置 `<favicon>`，或系统中没有 ImageMagick，则会改用 `frontend/public/` 中自带的默认图标。
+图标写入 `<DATA_DIR>/pwa/`，并通过 manifest 中声明的路径对外提供。每次启动时，后端还会在同一目录重新生成 `manifest.webmanifest`，把其中的 `name` / `short_name`（即安装后显示的应用名）替换为 `config.xml` 里的 `<title>`，其余字段（描述、配色、图标列表）沿用前端构建产物中的模板。因此修改 `<favicon>` 或 `<title>` 后重启容器，即可更新可安装图标与应用名。favicon 可以是 ImageMagick 能读取的任意格式（PNG、WEBP 等）。若未配置 `<favicon>`，或系统中没有 ImageMagick，则会改用 `frontend/public/` 中自带的默认图标；若 manifest 模板读取失败，则同样回退到自带的默认 manifest。
 
 Docker 镜像中已安装 ImageMagick。本地开发时请自行安装（`brew install imagemagick`、`apt install imagemagick` 等）。
 
