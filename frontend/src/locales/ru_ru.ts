@@ -44,7 +44,7 @@ export const ru_ru: Messages = {
   poweredBy: (version) => `Работает на biangbiang ${version}`,
 
   sortLabel: 'Сортировка',
-  sortByName: 'По названию',
+  sortAlphabetical: 'По алфавиту',
   sortByUpdated: 'По обновлению',
   sortByMostAssets: 'Больше файлов',
   sortByLeastAssets: 'Меньше файлов',

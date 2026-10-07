@@ -1,5 +1,5 @@
 /*
- * Global styles. Colours mirror Ant Design's design tokens for light/dark so the
+ * Global styles. Colors mirror Ant Design's design tokens for light/dark so the
  * page background matches the components rendered by ConfigProvider.
  */
 :root {
@@ -135,7 +135,7 @@ body {
 
 /* Card grid: one column on phones, two on tablets, three on desktop. Items are
    aligned to `start` rather than stretched, so every card is exactly as tall as
-   its own content - a short card is never padded out to match a tall neighbour.
+   its own content - a short card is never padded out to match a tall neighbor.
 
    That alone leaves dead space under the short card, because CSS Grid still
    aligns rows: the next row starts below the tallest card of the previous one,
@@ -148,7 +148,7 @@ body {
 
    On its own Grid Lanes packs each card into whichever lane is emptiest, which
    shuffles a sorted list: at the 1em default a card here changed lanes purely
-   because its neighbour's card was 31px taller, which put WallCat ahead of
+   because its neighbor's card was 31px taller, which put WallCat ahead of
    Shizuku. `flow-tolerance` sets how big that difference must be before a card
    may move - anything smaller counts as a tie and the card stays in reading
    order. 4rem covers the height differences this content actually produces (a

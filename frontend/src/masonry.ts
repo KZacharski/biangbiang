@@ -2,7 +2,7 @@
  * Grid Lanes fallback.
  *
  * `display: grid-lanes` takes the row alignment out of CSS Grid, which is what
- * leaves dead space under a card that is shorter than its neighbour. Safari
+ * leaves dead space under a card that is shorter than its neighbor. Safari
  * 26.4+ has shipped it, but Chrome, Edge and Firefox still keep it behind a
  * flag, and there the rows stay aligned and the gap comes back.
  *

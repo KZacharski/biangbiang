@@ -141,7 +141,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 | `<title>` | 根节点 | 否 | 页头、浏览器标签页以及**安装后的应用名**显示的站点标题。缺省时回退为 `Releases`。 |
 | `<lang>` | 根节点 | 否 | 界面语言，取 `zh_cn` / `zh_tw` / `en_us` / `pl_pl` / `ru_ru` / `sv_se` 之一（大小写不敏感，也接受 `zh-CN` 这种连字符写法）。整套界面文案、日期格式以及 Ant Design 组件自带的文案都会随之切换。缺省或填了无法识别的值时回退为 `zh_cn`（简体中文）。 |
 | `<favicon>` | 根节点 | 否 | 用作站点 favicon 的 PNG/WEBP，**同时**是可安装 PWA 图标的生成源。缺省时使用内置的默认图标。 |
-| `<sortable>` | 根节点 | 否 | 只接受 `true` / `false`（大小写不敏感）。设为 `true` 时页头会出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认按名称（字母顺序）；`false`、写错或省略时，卡片严格保持 `<project>` 的书写顺序。 |
+| `<sortable>` | 根节点 | 否 | 只接受 `true` / `false`（大小写不敏感）。设为 `true` 时页头会出现排序下拉框，访客可按「按字母顺序 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认按字母顺序；`false`、写错或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>` | 根节点 | 否 | Ant Design [基础色板](https://ant.design/docs/spec/colors) 的色名，取 `red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta` 之一（大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或写成无法识别的值时一律回退为默认蓝色——不会报错，也不会让站点失去配色。 |
 | `<font>` | 根节点 | 否 | 字体文件路径（如 `assets/MyFont.woff2`），与 `<favicon>` 一样**相对于 `config.xml` 所在目录**解析。站点整体——包括 Ant Design 的按钮、标签、下拉框等组件——都会改用该字体，缺字形的字符仍由系统字体补足。省略、留空或文件不存在时保持系统默认字体。 |
 | `<project>` | 根节点（0..N） | — | 对应站点上的一张卡片。数量不限，自动按屏幕宽度排成 1 / 2 / 3 列，且每张卡片各自独立高度——不会被拉伸去补齐同行最高的卡片。较矮的卡片还会上浮填满下方的空位，卡片间距恒为 16px——Safari 26.4+ 走原生 Grid Lanes，其他浏览器由前端自行排版。 |
@@ -534,7 +534,8 @@ curl -sI "https://mirror.example.com/dl/{owner}/{repo}/{version}/{file}" | head 
 - 每个 `<project>` 对应一张卡片，卡片上有版本标签和每个产物的下载按钮。
 - 「查看原仓库」按钮会跳回 GitHub。
 - 主题切换器提供「跟随系统 / 浅色 / 深色」三档。
-- 若设置了 `<sortable>true</sortable>`，页头会出现排序下拉框（按名称 / 最近更新 / 文件最多 / 文件最少）。
+- 若设置了 `<sortable>true</sortable>`，页头会出现排序下拉框（按字母顺序 / 最近更新 / 文件最多 / 文件最少）。
+- 若设置了 `<lang>`（如 `<lang>zh_tw</lang>`），整套界面文案、日期格式以及 Ant Design 组件自带的文案都会变成该语言；未设置时为简体中文。
 - 若设置了 `<accent>`（如 `<accent>volcano</accent>`），版本标签、「查看原仓库」链接等原本为蓝色的元素会变成该颜色；未设置时保持默认蓝色。
 - 若设置了 `<font>`（如 `<font>assets/MyFont.woff2</font>`），页面所有文字——含按钮、标签、下拉框等 Ant Design 组件——都会改用该字体；未设置或文件不存在时保持系统默认字体。
 - 页面已禁用双指缩放，整体不再能放大缩小，滚动与左右/上下滑动不受影响；浏览器菜单或系统辅助功能里的缩放仍然可用。

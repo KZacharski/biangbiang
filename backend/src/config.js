@@ -32,7 +32,7 @@ function asBool(value, fallback) {
 }
 
 /**
- * Ant Design's 12 base palettes, mapped to their primary (shade 5) colour.
+ * Ant Design's 12 base palettes, mapped to their primary (shade 5) color.
  * Taken from https://ant.design/docs/spec/colors - `<accent>` accepts one of
  * these names. Note that `blue` is the v5 Daybreak Blue, which is what
  * ant-design-vue renders by default.
@@ -58,12 +58,12 @@ export const DEFAULT_ACCENT = ACCENTS.blue;
 /**
  * The interface languages the frontend ships, in the order they are offered.
  * `<lang>` accepts these codes and nothing else; anything missing or
- * unrecognised falls back to Simplified Chinese, which is what the interface
+ * unrecognized falls back to Simplified Chinese, which is what the interface
  * used before `<lang>` existed.
  */
 export const LANGS = ['zh_cn', 'zh_tw', 'en_us', 'pl_pl', 'ru_ru', 'sv_se'];
 
-/** The language used when `<lang>` is absent or unrecognised. */
+/** The language used when `<lang>` is absent or unrecognized. */
 export const DEFAULT_LANG = 'zh_cn';
 
 /**

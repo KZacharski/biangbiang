@@ -141,7 +141,7 @@ mkdir -p data            # config.xml、overwrite.xml 與 assets/ 隨倉庫提�
 | `<title>` | 根節點 | 否 | 頁首、瀏覽器分頁以及**安裝後的應用程式名稱**顯示的站點標題。缺省時回退為 `Releases`。 |
 | `<lang>` | 根節點 | 否 | 介面語言，取 `zh_cn` / `zh_tw` / `en_us` / `pl_pl` / `ru_ru` / `sv_se` 之一（大小寫不敏感，也接受 `zh-CN` 這種連字號寫法）。整套介面文案、日期格式以及 Ant Design 元件自帶的文案都會隨之切換。缺省或填了無法辨識的值時回退為 `zh_cn`（簡體中文）。 |
 | `<favicon>` | 根節點 | 否 | 用作站點 favicon 的 PNG/WEBP，**同時**是可安裝 PWA 圖示的產生來源。缺省時使用內建的預設圖示。 |
-| `<sortable>` | 根節點 | 否 | 只接受 `true` / `false`（大小寫不敏感）。設為 `true` 時頁首會出現排序下拉選單，訪客可依「依名稱 / 最近更新 / 檔案最多 / 檔案最少」重新排列卡片，預設依名稱（字母順序）；`false`、寫錯或省略時，卡片嚴格保持 `<project>` 的書寫順序。 |
+| `<sortable>` | 根節點 | 否 | 只接受 `true` / `false`（大小寫不敏感）。設為 `true` 時頁首會出現排序下拉選單，訪客可依「依字母順序 / 最近更新 / 檔案最多 / 檔案最少」重新排列卡片，預設依字母順序；`false`、寫錯或省略時，卡片嚴格保持 `<project>` 的書寫順序。 |
 | `<accent>` | 根節點 | 否 | Ant Design [基礎色板](https://ant.design/docs/spec/colors) 的色名，取 `red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta` 之一（大小寫不敏感）。用該色取代站點預設的品牌藍（Daybreak Blue）。省略、留空或寫成無法辨識的值時一律回退為預設藍色——不會報錯，也不會讓站點失去配色。 |
 | `<font>` | 根節點 | 否 | 字型檔案路徑（如 `assets/MyFont.woff2`），與 `<favicon>` 一樣**相對於 `config.xml` 所在目錄**解析。站點整體——包括 Ant Design 的按鈕、標籤、下拉選單等元件——都會改用該字型，缺字形的字元仍由系統字型補足。省略、留空或檔案不存在時保持系統預設字型。 |
 | `<project>` | 根節點（0..N） | — | 對應站點上的一張卡片。數量不限，自動依螢幕寬度排成 1 / 2 / 3 欄，且每張卡片各自獨立高度——不會被拉伸去補齊同列最高的卡片。較矮的卡片還會上浮填滿下方的空位，卡片間距恆為 16px——Safari 26.4+ 走原生 Grid Lanes，其他瀏覽器由前端自行排版。 |
@@ -537,7 +537,7 @@ curl -sI "https://mirror.example.com/dl/{owner}/{repo}/{version}/{file}" | head 
 - 每個 `<project>` 對應一張卡片，卡片上有版本標籤和每個產物的下載按鈕。
 - 「查看原倉庫」按鈕會跳回 GitHub。
 - 主題切換器提供「跟隨系統 / 淺色 / 深色」三檔。
-- 若設定了 `<sortable>true</sortable>`，頁首會出現排序下拉選單（依名稱 / 最近更新 / 檔案最多 / 檔案最少）。
+- 若設定了 `<sortable>true</sortable>`，頁首會出現排序下拉選單（依字母順序 / 最近更新 / 檔案最多 / 檔案最少）。
 - 若設定了 `<lang>`（如 `<lang>zh_tw</lang>`），整套介面文案、日期格式以及 Ant Design 元件自帶的文案都會變成該語言；未設定時為簡體中文。
 - 若設定了 `<accent>`（如 `<accent>volcano</accent>`），版本標籤、「查看原倉庫」連結等原本為藍色的元素會變成該顏色；未設定時保持預設藍色。
 - 若設定了 `<font>`（如 `<font>assets/MyFont.woff2</font>`），頁面所有文字——含按鈕、標籤、下拉選單等 Ant Design 元件——都會改用該字型；未設定或檔案不存在時保持系統預設字型。

@@ -32,7 +32,7 @@ export const en_us: Messages = {
   poweredBy: (version) => `Powered by biangbiang ${version}`,
 
   sortLabel: 'Sort by',
-  sortByName: 'Name',
+  sortAlphabetical: 'Alphabetical',
   sortByUpdated: 'Recently updated',
   sortByMostAssets: 'Most files',
   sortByLeastAssets: 'Fewest files',

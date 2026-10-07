@@ -99,15 +99,15 @@ const faviconBroken = ref(false);
 const gridRef = ref<HTMLElement | null>(null);
 
 /** How the visitor ordered the cards. Only offered when `<sortable>` is on. */
-type SortKey = 'name' | 'updated' | 'mostAssets' | 'leastAssets';
+type SortKey = 'alphabetical' | 'updated' | 'mostAssets' | 'leastAssets';
 
 /** Alphabetical is the default the moment `<sortable>` is enabled. */
-const sortKey = ref<SortKey>('name');
+const sortKey = ref<SortKey>('alphabetical');
 
 // Computed rather than a plain array: the language arrives with /api/state,
 // which lands after this component has been set up.
 const sortOptions = computed<{ label: string; value: SortKey }[]>(() => [
-  { label: strings.sortByName, value: 'name' },
+  { label: strings.sortAlphabetical, value: 'alphabetical' },
   { label: strings.sortByUpdated, value: 'updated' },
   { label: strings.sortByMostAssets, value: 'mostAssets' },
   { label: strings.sortByLeastAssets, value: 'leastAssets' },
@@ -123,7 +123,7 @@ function timestamp(iso: string | null): number {
 /** A sorted copy of `list`. Items of equal rank keep their config.xml order. */
 function sortProjects(list: Project[], key: SortKey): Project[] {
   const sorted = [...list];
-  if (key === 'name') {
+  if (key === 'alphabetical') {
     return sorted.sort((a, b) => a.name.localeCompare(b.name, localeTag.value));
   }
   if (key === 'updated') {

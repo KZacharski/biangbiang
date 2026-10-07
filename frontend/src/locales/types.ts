@@ -33,7 +33,7 @@ export interface Messages {
   poweredBy: (version: string) => string;
 
   sortLabel: string;
-  sortByName: string;
+  sortAlphabetical: string;
   sortByUpdated: string;
   sortByMostAssets: string;
   sortByLeastAssets: string;

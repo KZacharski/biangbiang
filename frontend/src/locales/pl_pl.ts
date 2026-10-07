@@ -44,7 +44,7 @@ export const pl_pl: Messages = {
   poweredBy: (version) => `Obsługiwane przez biangbiang ${version}`,
 
   sortLabel: 'Sortuj według',
-  sortByName: 'Nazwa',
+  sortAlphabetical: 'Alfabetycznie',
   sortByUpdated: 'Ostatnio zaktualizowane',
   sortByMostAssets: 'Najwięcej plików',
   sortByLeastAssets: 'Najmniej plików',

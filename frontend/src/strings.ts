@@ -23,7 +23,7 @@ export const localeTag = computed(() => tagFor(locale.value));
 
 /**
  * Switch the interface language to the code config.xml asked for. An
- * unrecognised code leaves the language alone, so a bad `<lang>` can never blank
+ * unrecognized code leaves the language alone, so a bad `<lang>` can never blank
  * the interface - it simply keeps Simplified Chinese.
  */
 export function setLocale(code: string | null | undefined): void {

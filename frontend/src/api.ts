@@ -29,7 +29,7 @@ export interface SiteState {
   lang: string;
   /** Whether visitors may re-sort the cards (config.xml `<sortable>`). */
   sortable: boolean;
-  /** Accent colour as a hex string, resolved from config.xml `<accent>`. */
+  /** Accent color as a hex string, resolved from config.xml `<accent>`. */
   accent: string;
   /** Font file URL from config.xml `<font>`, or null to use the system stack. */
   font: string | null;

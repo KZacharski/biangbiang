@@ -38,7 +38,7 @@ export async function resolveImageMagick() {
   return null;
 }
 
-/** Average colour of the image (used to fill the maskable icon's padding). */
+/** Average color of the image (used to fill the maskable icon's padding). */
 async function averageHex(bin, src) {
   try {
     const { stdout } = await execFileAsync(bin, [

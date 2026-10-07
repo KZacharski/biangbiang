@@ -32,7 +32,7 @@ export const sv_se: Messages = {
   poweredBy: (version) => `Drivs av biangbiang ${version}`,
 
   sortLabel: 'Sortera efter',
-  sortByName: 'Namn',
+  sortAlphabetical: 'Alfabetiskt',
   sortByUpdated: 'Senast uppdaterad',
   sortByMostAssets: 'Flest filer',
   sortByLeastAssets: 'Minst filer',

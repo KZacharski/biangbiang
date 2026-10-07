@@ -108,7 +108,7 @@ watchEffect(() => {
 });
 
 /**
- * Apply the accent colour resolved from config.xml (`<accent>`). Called with the
+ * Apply the accent color resolved from config.xml (`<accent>`). Called with the
  * value from /api/state once it arrives; an empty value leaves blue in place.
  */
 export function setAccent(color: string | null | undefined): void {

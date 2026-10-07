@@ -13,7 +13,7 @@ export const MANIFEST_FILE = 'manifest.webmanifest';
  *
  * The manifest is what the browser uses for the installed app's name, so it is
  * derived from `<title>` at every launch - exactly the way the icons are derived
- * from `<favicon>`. Everything else (description, colours, the icon list) is
+ * from `<favicon>`. Everything else (description, colors, the icon list) is
  * carried over from the manifest that ships with the frontend build, so the two
  * never drift apart.
  *

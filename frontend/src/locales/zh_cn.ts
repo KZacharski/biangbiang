@@ -32,7 +32,7 @@ export const zh_cn: Messages = {
   poweredBy: (version) => `由 biangbiang ${version} 提供支持`,
 
   sortLabel: '排序方式',
-  sortByName: '按名称',
+  sortAlphabetical: '按字母顺序',
   sortByUpdated: '最近更新',
   sortByMostAssets: '文件最多',
   sortByLeastAssets: '文件最少',

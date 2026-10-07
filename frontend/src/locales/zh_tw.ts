@@ -32,7 +32,7 @@ export const zh_tw: Messages = {
   poweredBy: (version) => `由 biangbiang ${version} 提供`,
 
   sortLabel: '排序方式',
-  sortByName: '依名稱',
+  sortAlphabetical: '依字母順序',
   sortByUpdated: '最近更新',
   sortByMostAssets: '檔案最多',
   sortByLeastAssets: '檔案最少',

@@ -162,13 +162,13 @@ it for your own projects.
 
 ### Tag reference
 
-| Tag | Where | Required | Behaviour |
+| Tag | Where | Required | Behavior |
 |---|---|---|---|
 | `<title>` | root | no | Site title in the header, the browser tab, and the **installed app's name**. Falls back to `Releases`. |
 | `<lang>` | root | no | Interface language: one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` (case-insensitive, and a hyphen works too, so `zh-CN` is accepted). The interface copy, date formats and the text Ant Design renders inside its own components all follow it. Falls back to `zh_cn` (Simplified Chinese). |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
-| `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
-| `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values fall back to the default blue — never an error, and the site is never left uncoloured. |
+| `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards alphabetically, by last updated, most assets or least assets; alphabetical order is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
+| `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognized values fall back to the default blue — never an error, and the site is never left uncolored. |
 | `<font>` | root | no | Path to a font file (e.g. `assets/MyFont.woff2`), resolved **relative to the directory containing `config.xml`**, exactly like `<favicon>`. The whole site — including Ant Design buttons, tags and selects — switches to it, and any glyph the font lacks is still filled in by the system font. Omitted, empty, or a file that is not there leaves the system font in place. |
 | `<project>` | root (0..N) | — | One card on the site. Add as many as you like — they flow into 1 / 2 / 3 columns depending on the screen width, and every card is only as tall as its own content, never stretched to fill the row. A short card also floats up into the free space beneath it, so cards stay exactly 16px apart: Safari 26.4+ does this natively with Grid Lanes, and the frontend lays the cards out itself anywhere else. |
 | `<icon>` | inside `<project>` | no | Card thumbnail (PNG/WEBP). If omitted or broken, the card shows the project's first letter instead. |
@@ -246,7 +246,7 @@ is filled in from `overwrite.xml`, which sits next to `config.xml`:
 | `<repo>` | URL the "view original repo" button links to. Optional — the button is hidden when omitted. |
 | `<downloads>/<file>` | One download button per `<file>`, linking directly to that external URL. |
 
-Behaviour:
+Behavior:
 
 - **Lazy loading.** `overwrite.xml` is read only when at least one
   `overwrite@{number}` exists in `config.xml`. A GitHub-only site never opens
@@ -329,7 +329,7 @@ cp ~/my-logo.png /srv/biangbiang/assets/favicon.png
   |---|---|---|
   | `pwa-192x192.png` | 192×192 | PWA icon, transparency preserved |
   | `pwa-512x512.png` | 512×512 | PWA icon, transparency preserved |
-  | `pwa-maskable-512x512.png` | 512×512 | Android adaptive icon, logo scaled to 80 % on an average-colour background |
+  | `pwa-maskable-512x512.png` | 512×512 | Android adaptive icon, logo scaled to 80 % on an average-color background |
   | `apple-touch-icon.png` | 180×180 | iOS home screen (flattened onto white) |
 
   They are written to `data/pwa/` and served by the backend — you never commit
@@ -614,10 +614,13 @@ Then open `https://mirror.example.com` in a browser:
 - "查看原仓库" (view original repo) links back to GitHub.
 - The theme switcher offers 跟随系统 / 浅色 / 深色 (system / light / dark).
 - With `<sortable>true</sortable>` set, a sort dropdown appears in the header
-  (by name / last updated / most assets / least assets).
+  (alphabetical / last updated / most assets / least assets).
+- With `<lang>` set (e.g. `<lang>en_us</lang>`), the whole interface — copy,
+  date formats and the text Ant Design renders inside its own components —
+  switches to that language. Left unset, it stays in Simplified Chinese.
 - With `<accent>` set (e.g. `<accent>volcano</accent>`), the elements that were
   blue — the version tag, the "view original repo" link and so on — take that
-  colour instead. Left unset, they stay the default blue.
+  color instead. Left unset, they stay the default blue.
 - With `<font>` set (e.g. `<font>assets/MyFont.woff2</font>`), all of the page's
   text — Ant Design buttons, tags and selects included — uses that font. Left
   unset, or pointed at a file that is not there, the system font stays in place.

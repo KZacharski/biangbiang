@@ -35,10 +35,10 @@ The whole project runs inside **a single Docker container**: one Node.js
   icon/name/repository all come from `config.xml`; icons are ordinary PNG/WEBP
   files, and the repo ships a ready-to-use sample set you can swap out freely.
 - **Optional card sorting**: set `<sortable>true</sortable>` and a sort dropdown
-  appears in the header, letting visitors re-order the cards by name, last
-  updated, most assets or least assets. With `false` (or the tag omitted) the
-  cards keep the exact order of `config.xml`.
-- **Configurable accent colour**: give `<accent>` the name of any colour in
+  appears in the header, letting visitors re-order the cards alphabetically, by
+  last updated, most assets or least assets. With `false` (or the tag
+  omitted) the cards keep the exact order of `config.xml`.
+- **Configurable accent color**: give `<accent>` the name of any color in
   Ant Design's [base palettes](https://ant.design/docs/spec/colors) — e.g.
   `volcano` or `purple` — and the site uses it in place of the default brand
   blue. Omit it (or misspell it) and the site stays blue.
@@ -51,7 +51,7 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Installable as a PWA** (manifest + service worker) — with **no offline
   caching**, by design. The app name follows `<title>`; the icons follow
   `<favicon>`.
-- **Multilingual interface**: set `<lang>` to one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` and the entire interface — copy, date formats, and the text Ant Design renders inside its own components — switches to that language. Omit it, or use an unrecognised value, and the site stays in Simplified Chinese.
+- **Multilingual interface**: set `<lang>` to one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` and the entire interface — copy, date formats, and the text Ant Design renders inside its own components — switches to that language. Omit it, or use an unrecognized value, and the site stays in Simplified Chinese.
 - **Responsive card grid** — one column on phones, two on tablets, three on
   desktop. Every card is sized to its own content and is never stretched to
   match the tallest card in its row. A short card also floats up into the free
@@ -164,10 +164,10 @@ alongside it or in the `assets/` subdirectory.
 | Tag          | Location     | Description |
 |--------------|----------------|------|
 | `<title>`    | root         | Site title, shown in the header, the browser tab, and as the **installed app's name** (written into the manifest at every launch). |
-| `<lang>`     | root         | Optional. Interface language: one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` (case-insensitive; a hyphen works too, so `zh-CN` is accepted). Omitted, empty or unrecognised values fall back to `zh_cn` (Simplified Chinese). |
+| `<lang>`     | root         | Optional. Interface language: one of `zh_cn`, `zh_tw`, `en_us`, `pl_pl`, `ru_ru` or `sv_se` (case-insensitive; a hyphen works too, so `zh-CN` is accepted). Omitted, empty or unrecognized values fall back to `zh_cn` (Simplified Chinese). |
 | `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
-| `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets — name (alphabetical) is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
-| `<accent>`   | root         | Optional. Name of an Ant Design base palette — `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values all fall back to the default blue. |
+| `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards alphabetically, by last updated, most assets or least assets — alphabetical order is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
+| `<accent>`   | root         | Optional. Name of an Ant Design base palette — `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognized values all fall back to the default blue. |
 | `<font>`     | root         | Optional. Path to a font file (e.g. `assets/MyFont.woff2`), resolved relative to `config.xml` exactly like `<favicon>`. The whole site — Ant Design components included — switches to it. Omitted, empty, or a file that is not there all fall back to the system font. |
 | `<project>`  | root (0..N)  | One entry per project → one card on the site. |
 | `<icon>`    | inside a project | PNG/WEBP file used as the card icon. Optional. |
@@ -474,14 +474,14 @@ icon set from the favicon with ImageMagick:
 |------|------|------|
 | `pwa-192x192.png` | 192×192 | Transparency preserved, padded to a square |
 | `pwa-512x512.png` | 512×512 | Transparency preserved, padded to a square |
-| `pwa-maskable-512x512.png` | 512×512 | Logo scaled to 80%, background filled with the favicon's average colour |
+| `pwa-maskable-512x512.png` | 512×512 | Logo scaled to 80%, background filled with the favicon's average color |
 | `apple-touch-icon.png` | 180×180 | Flattened onto a white background (iOS does not support transparency) |
 
 The icons are written to `{DATA_DIR}/pwa/` and served at the paths declared in
 the manifest. On every startup the backend also regenerates
 `manifest.webmanifest` in the same directory, replacing its `name` / `short_name`
 (the name shown for the installed app) with the `<title>` from `config.xml`;
-every other field — description, colours, the icon list — is carried over from
+every other field — description, colors, the icon list — is carried over from
 the template that ships with the frontend build. So changing `<favicon>` or
 `<title>` and restarting the container updates the installable icons and the app
 name. The favicon can be any format ImageMagick can read (PNG, WEBP, …). If
