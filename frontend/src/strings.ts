@@ -47,4 +47,4 @@ export const strings = {
 } as const;
 
 /** Home page of this project, linked from the footer. */
-export const REPO_URL = 'https://github.com/KZacharski/biangbiang';
+export const REPO_URL = 'https://github.com/xiaomianguan/biangbiang';

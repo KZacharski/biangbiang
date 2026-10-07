@@ -8,7 +8,7 @@
 
 整个项目运行在**单个 Docker 容器**内：一个 Node.js (Express) 进程同时提供 API、镜像文件以及构建好的单页应用。
 
-> 仓库地址：<https://github.com/KZacharski/biangbiang/>
+> 仓库地址：<https://github.com/xiaomianguan/biangbiang/>
 > 部署文档：[进阶部署指南（简体中文）](ADVANCED_INSTRUCTION_zh_CN.md) · [Advanced Deployment Guide (English)](ADVANCED_INSTRUCTION_en_US.md)
 
 ---
@@ -202,7 +202,7 @@ user/project1
 ### 1. 获取项目
 
 ```bash
-git clone https://github.com/KZacharski/biangbiang.git
+git clone https://github.com/xiaomianguan/biangbiang.git
 cd biangbiang
 ```
 

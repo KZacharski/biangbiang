@@ -70,7 +70,7 @@
 sudo mkdir -p /srv/biangbiang
 sudo chown "$USER":"$USER" /srv/biangbiang
 cd /srv/biangbiang
-git clone https://github.com/KZacharski/biangbiang.git .
+git clone https://github.com/xiaomianguan/biangbiang.git .
 ```
 
 > **`chown` 这一步不能省。** `sudo mkdir` 建出来的目录属主是 `root`，之后在它里面创建的所有东西（包括 `./data`）都会继承这个属主。容器是以非特权用户运行的，属主为 `root` 的 `./data` 会让镜像任务在第一次写入时就报 `EACCES`。

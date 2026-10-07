@@ -12,7 +12,7 @@ Vue + [Ant Design Vue](https://antdv.com) frontend.
 The whole project runs inside **a single Docker container**: one Node.js
 (Express) process serves the API, the mirrored files, and the built SPA.
 
-> Repository: <https://github.com/KZacharski/biangbiang/>
+> Repository: <https://github.com/xiaomianguan/biangbiang/>
 > Deployment docs: [Advanced Deployment Guide (English)](ADVANCED_INSTRUCTION_en_US.md) · [进阶部署指南（简体中文）](ADVANCED_INSTRUCTION_zh_CN.md)
 
 ---
@@ -240,7 +240,7 @@ Worth knowing:
 ### 1. Get the project
 
 ```bash
-git clone https://github.com/KZacharski/biangbiang.git
+git clone https://github.com/xiaomianguan/biangbiang.git
 cd biangbiang
 ```
 

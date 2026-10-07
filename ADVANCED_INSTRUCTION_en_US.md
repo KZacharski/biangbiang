@@ -76,7 +76,7 @@ State and artifacts live in a bind mount (`./data`), so `docker compose up
 sudo mkdir -p /srv/biangbiang
 sudo chown "$USER":"$USER" /srv/biangbiang
 cd /srv/biangbiang
-git clone https://github.com/KZacharski/biangbiang.git .
+git clone https://github.com/xiaomianguan/biangbiang.git .
 ```
 
 > **Don't skip the `chown`.** `sudo mkdir` leaves the directory owned by `root`,
