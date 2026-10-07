@@ -15,12 +15,13 @@
 
 ## 功能特性
 
+- **开箱即用**：仓库自带一份可直接使用的 `config.xml`、`overwrite.xml` 与 `assets/`（favicon、项目图标，以及一份随附字体）。克隆后执行 `docker compose up -d --build` 就能看到一个完整站点，无需先准备任何文件——你可以在此基础上继续改，也可以把样例删掉、从零开始。
 - **自动镜像**每个 GitHub Release 中附带的所有构建产物。
 - **排除源码归档**——GitHub 自动附加的 `Source code (zip)` / `Source code (tar.gz)` 永远不会被镜像。
 - **每 24 小时检查一次更新**（可配置），并且每个项目在磁盘上只保留最新版本。
 - **支持任意数量的项目**——`config.xml` 中每个 `<project>` 对应一张卡片。
 - **支持手动条目**——`<repo>` 写成 `overwrite@<数字>` 时，卡片数据改由 `overwrite.xml` 提供，从而把 GitHub 项目与任意外部下载链接混合在同一个站点里。
-- **完全由配置驱动**：标题、favicon 以及各项目的图标/名称/仓库地址全部来自 `config.xml`；图标为使用者自行提供的 PNG/WEBP 文件。
+- **完全由配置驱动**：标题、favicon 以及各项目的图标/名称/仓库地址全部来自 `config.xml`；图标是普通的 PNG/WEBP 文件，仓库自带一套可直接使用、也可随意替换的样例。
 - **可选的项目排序**：把 `<sortable>` 设为 `true` 后，页头会出现排序下拉框，访客可按名称、最近更新、文件最多或文件最少重新排列卡片；设为 `false` 或省略时，卡片严格保持 `config.xml` 中的书写顺序。
 - **可配置主题色**：`<accent>` 填 Ant Design [基础色板](https://ant.design/docs/spec/colors) 中的色名（如 `volcano`、`purple`），站点即用该色替代默认的品牌蓝；省略或写错时保持默认蓝色。
 - **可配置字体**：`<font>` 填字体文件路径（如 `.woff2`），站点整体——含 Ant Design 组件——都会改用该字体；路径与 `<favicon>` 一样相对于 `config.xml` 所在目录解析，省略或指向不存在的文件时保持系统默认字体。
@@ -28,7 +29,7 @@
 - **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**。
 - **简体中文（zh-Hans）**界面，文案硬编码。
 - **响应式卡片网格**：手机单列、平板双列、桌面三列，每张卡片各自独立高度，不会被拉伸到与同行最高的一张齐平。较矮的卡片还会上浮填满下方的空位，卡片之间始终只有 16px 的间距——Safari 26.4+ 走原生 Grid Lanes，其他浏览器由前端自行排版。
-- **健壮性**：某个仓库损坏或地址错误不会拖垮整个站点——同步失败的项目会保留上一次成功的数据。
+- **健壮性**：某个仓库损坏或地址错误不会拖垮整个站点——同步失败的项目会保留上一次成功的数据。自带的样例配置刻意保留了两张失败卡片来演示这一点。
 
 ---
 
@@ -61,9 +62,9 @@
 ```text
 biangbiang/
 ├── .github/assets/         # README 徽章
-├── config.xml              # 你的配置（挂载进容器）
-├── overwrite.xml           # 可选：手动条目（非 GitHub 项目，挂载进容器）
-├── assets/                 # 你的 favicon 与项目图标（挂载，只读）
+├── config.xml              # 站点配置，自带可直接使用的样例（挂载进容器）
+├── overwrite.xml           # 手动条目（非 GitHub 项目），自带样例（挂载进容器）
+├── assets/                 # favicon、项目图标与字体，自带样例（挂载，只读）
 ├── data/                   # 镜像产物、state.json、生成的 PWA 图标
 ├── backend/                # Node.js + Express 的 API / 镜像引擎
 │   └── src/
@@ -187,7 +188,7 @@ user/project1
 - 下载按钮上显示的文件名取自链接 URL 的最后一段。
 - Docker 部署时 `overwrite.xml` 会与 `config.xml` 一样以只读方式挂载进容器，无需任何额外操作。
 
-> **图片完全由使用者提供。** 把你自己的 PNG/WEBP 文件放在 `config.xml` 旁边（或 `assets/` 子目录中），并在配置里引用它们。仓库内自带的图片仅作占位符。
+> **仓库自带一套开箱即用的样例素材。** 新克隆的仓库里，`config.xml`、`overwrite.xml` 与 `assets/`（favicon、项目图标，以及一份随附字体）都是齐全的，`docker compose up -d --build` 之后无需任何改动就能看到一个完整站点。要换成自己的外观，把 `assets/` 里的文件替换掉并在 `config.xml` 中引用即可；想从零开始，就把这些样例文件删掉、只留自己的配置。
 
 ---
 
@@ -206,19 +207,21 @@ git clone https://github.com/xiaomianguan/biangbiang.git
 cd biangbiang
 ```
 
-### 2. 准备配置与图标
+### 2. 准备配置与图标（可跳过：仓库自带可用样例）
 
 ```
 biangbiang/
 ├── config.xml
-├── overwrite.xml           # 可选：仅在用到 overwrite@<数字> 时需要
+├── overwrite.xml           # 手动条目：仅在用到 overwrite@<数字> 时需要
 └── assets/
     ├── favicon.png
     ├── icon1.png
     └── icon2.webp
 ```
 
-编辑 `config.xml`，填入站点标题与你的项目（语法见上一节）。
+新克隆的仓库**已经包含**以上全部文件，所以这一步是可选的：直接 `docker compose up -d --build` 就能看到一个完整站点。要改成自己的站点，编辑 `config.xml` 填入标题与项目（语法见上一节），并把 `assets/` 里的图片换成自己的即可。
+
+> **样例配置里有两张「故意失败」的卡片。** 自带的 `config.xml` 分别用 `https://github.com/user/project2`（不存在的仓库）和 `overwrite@2`（`overwrite.xml` 中没有对应 `<id>`）演示两种错误状态——它们用来展示站点在仓库写错或手动条目缺失时的表现，属于预期行为，不是 bug。把它们删掉，或改成你自己的条目即可。
 
 > **用到手动条目时**，直接在 `overwrite.xml` 里填写条目即可——`docker-compose.yml` 已经把它挂载进容器了。
 >

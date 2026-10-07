@@ -82,12 +82,12 @@ git clone https://github.com/xiaomianguan/biangbiang.git .
 ```bash
 cp docker-compose.advanced.yml docker-compose.yml
 cp .env.example .env
-mkdir -p assets data
+mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提供，这里只需 data/
 ```
 
 > `./data` 由容器写入。容器启动时会自动修正它的属主（见[文件属主](#文件属主)），因此无需手动 `chown`。
 
-从这里开始，只有三个路径需要你关心：
+从这里开始，只有四个路径需要你关心：
 
 | 路径 | 用途 |
 |---|---|
@@ -101,6 +101,10 @@ mkdir -p assets data
 ## 第二步 —— 编写 config.xml
 
 `config.xml` 是**唯一**决定站点展示内容的文件。容器从 `/app/config.xml` 读取它，每次同步都会重新解析，因此改完配置后重启容器即可，无需重新构建镜像。
+
+仓库**已经自带一份可直接使用的 `config.xml`**，与之配套的 `overwrite.xml` 和 `assets/` 也一并提供，因此本步骤同样可以跳过——原样部署即可看到一个完整站点。下面的「最小示例」讲的是如何按自己的需求改写它。
+
+> **自带的样例里有两张「故意失败」的卡片。** 它分别用 `https://github.com/user/project2`（不存在的仓库）和 `overwrite@2`（`overwrite.xml` 中没有对应 `<id>`）演示两种错误状态，用来展示站点在仓库写错或手动条目缺失时的表现——这是预期行为，不是 bug。删掉它们，或改成你自己的项目即可。
 
 ### 最小示例
 
@@ -230,7 +234,7 @@ user/project1
 
 ## 第三步 —— 添加图片素材
 
-biangbiang **不内置**任何品牌图片，所有图片都由你自己提供。
+仓库**自带一套可用的样例素材**：`assets/` 中的 favicon、项目图标，以及一份随附字体。配合自带的 `config.xml`，新克隆的仓库开箱就是一个外观完整的站点，无需先准备任何图片。下面讲的是如何把它们换成你自己的——可以逐个替换，也可以把样例全部删掉、从零开始。站点外观完全由 `assets/` 与 `config.xml` 决定；biangbiang 本身不内置任何固定的品牌素材。
 
 ### 目录结构
 
@@ -243,6 +247,8 @@ biangbiang **不内置**任何品牌图片，所有图片都由你自己提供�
 │   └── icon2.webp         # 项目 2 的缩略图
 └── data/
 ```
+
+> 除 `data/` 外，以上文件都**已经随仓库提供**，所以下面的 `cp` 命令是「替换」而不是「创建」——只有当你想要自己的外观时才需要执行。
 
 ### 1. favicon（想要自定义外观就必填）
 

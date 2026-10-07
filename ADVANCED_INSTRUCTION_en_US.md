@@ -93,14 +93,14 @@ Now lay out the working tree you will actually deploy:
 ```bash
 cp docker-compose.advanced.yml docker-compose.yml
 cp .env.example .env
-mkdir -p assets data
+mkdir -p data            # config.xml, overwrite.xml and assets/ ship with the repo
 ```
 
 > `./data` is written by the container. The entrypoint corrects its ownership at
 > start-up (see [File ownership](#file-ownership)), so there is nothing to
 > `chown` by hand.
 
-Three paths matter from here on:
+Four paths matter from here on:
 
 | Path | Purpose |
 |---|---|
@@ -116,6 +116,18 @@ Three paths matter from here on:
 `config.xml` is the **only** thing that decides what the site shows. It is read
 from `/app/config.xml` inside the container and is re-parsed on every sync, so
 you can edit it and restart without rebuilding the image.
+
+A fresh clone **already ships a working `config.xml`**, together with its
+companion `overwrite.xml` and `assets/`, so this step is optional too — deploying
+as-is gives you a complete site. The "minimal example" below is how you rewrite
+it for your own projects.
+
+> **The sample configuration contains two deliberately broken cards.** It uses
+> `https://github.com/user/project2` (a repository that does not exist) and
+> `overwrite@2` (no matching `<id>` in `overwrite.xml`) to demonstrate the two
+> failure states — they show how the site behaves when a repo is misspelled or a
+> manual entry is missing. That is intended, not a bug. Delete them or point them
+> at your own projects.
 
 ### Minimal example
 
@@ -267,7 +279,12 @@ check. No rebuild or restart is required.
 
 ## Step 3 — Add your image assets
 
-biangbiang ships **no** branded artwork. Every image is supplied by you.
+The repository **ships a working sample set**: the favicon, project icons and a
+bundled font in `assets/`. Together with the bundled `config.xml` that makes a
+fresh clone a complete-looking site out of the box, with no images to prepare
+first. This step is about making it yours — swap the files one by one, or delete
+the samples entirely and start from scratch. The look is entirely determined by
+`assets/` and `config.xml`; biangbiang ships no fixed branded artwork of its own.
 
 ### Directory layout
 
@@ -280,6 +297,10 @@ biangbiang ships **no** branded artwork. Every image is supplied by you.
 │   └── icon2.webp         # project 2 thumbnail
 └── data/
 ```
+
+> Everything above except `data/` **already ships with the repository**, so the
+> `cp` commands below *replace* files rather than create them — you only need them
+> if you want your own look.
 
 ### 1. Favicon (required for a custom look)
 

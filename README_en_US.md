@@ -19,6 +19,11 @@ The whole project runs inside **a single Docker container**: one Node.js
 
 ## Features
 
+- **Works out of the box**: the repository ships a ready-to-use `config.xml`,
+  `overwrite.xml` and `assets/` (favicon, project icons and a bundled font).
+  Clone it and `docker compose up -d --build` gives you a complete site with
+  nothing to prepare first — build on the sample, or delete it and start from
+  scratch.
 - **Automatic mirroring** of every build artifact attached to a GitHub release.
 - **Source archives excluded** — the `Source code (zip)` / `Source code (tar.gz)`
   archives that GitHub attaches automatically are never mirrored.
@@ -27,8 +32,8 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Any number of projects** — one `<project>` in `config.xml` becomes one card.
 - **Manual entries** — writing `<repo>overwrite@<number></repo>` sources that card from `overwrite.xml` instead, so GitHub projects and arbitrary external download links can be mixed on one site.
 - **Fully configuration-driven**: title, favicon, and each project's
-  icon/name/repository all come from `config.xml`; icons are PNG/WEBP files that
-  you supply yourself.
+  icon/name/repository all come from `config.xml`; icons are ordinary PNG/WEBP
+  files, and the repo ships a ready-to-use sample set you can swap out freely.
 - **Optional card sorting**: set `<sortable>true</sortable>` and a sort dropdown
   appears in the header, letting visitors re-order the cards by name, last
   updated, most assets or least assets. With `false` (or the tag omitted) the
@@ -53,7 +58,8 @@ The whole project runs inside **a single Docker container**: one Node.js
   natively with Grid Lanes, and the frontend lays the cards out itself anywhere
   else.
 - **Robust**: one broken or misspelled repository never takes the site down —
-  a project that fails to sync keeps its last successfully mirrored data.
+  a project that fails to sync keeps its last successfully mirrored data. The
+  sample configuration deliberately keeps two failing cards to demonstrate it.
 
 ---
 
@@ -90,9 +96,9 @@ the tab regains focus) so long-lived pages stay current.
 ```text
 biangbiang/
 ├── .github/assets/         # README badge
-├── config.xml              # your configuration (mounted into the container)
-├── overwrite.xml           # optional: manual entries (non-GitHub, mounted)
-├── assets/                 # your favicon and project icons (mounted read-only)
+├── config.xml              # site config (mounted); ships with a working sample
+├── overwrite.xml           # manual (non-GitHub) entries (mounted); sample ships too
+├── assets/                 # favicon, project icons, font (mounted ro); sample ships
 ├── data/                   # mirrored artifacts, state.json, generated PWA icons
 ├── backend/                # Node.js + Express API / mirror engine
 │   └── src/
@@ -222,9 +228,12 @@ Worth knowing:
 - The file name shown on a download button is the last path segment of its URL.
 - Docker deployments mount `overwrite.xml` read-only alongside `config.xml`, so there is nothing extra to set up.
 
-> **All images are user-supplied.** Put your own PNG/WEBP files next to
-> `config.xml` (or in the `assets/` subdirectory) and reference them from the
-> configuration. The images bundled in the repository are placeholders only.
+> **The repository ships a complete, working sample set.** A fresh clone already
+> contains `config.xml`, `overwrite.xml` and `assets/` — favicon, project icons
+> and a bundled font — so `docker compose up -d --build` renders a full site with
+> nothing to edit. To make it yours, swap the files in `assets/` and reference
+> them from the configuration; to start from scratch, delete the samples and keep
+> only your own.
 
 ---
 
@@ -244,20 +253,29 @@ git clone https://github.com/xiaomianguan/biangbiang.git
 cd biangbiang
 ```
 
-### 2. Prepare the configuration and icons
+### 2. Prepare the configuration and icons (optional — a working sample ships with the repo)
 
 ```
 biangbiang/
 ├── config.xml
-├── overwrite.xml           # optional: only needed for overwrite@<number>
+├── overwrite.xml           # manual entries: only needed for overwrite@<number>
 └── assets/
     ├── favicon.png
     ├── icon1.png
     └── icon2.webp
 ```
 
-Edit `config.xml` and fill in the site title and your projects (syntax in the
-previous section).
+A fresh clone **already contains** all of the above, so this step is optional:
+`docker compose up -d --build` gives you a complete site right away. To make it
+your own, edit `config.xml` and fill in the site title and your projects (syntax
+in the previous section), then replace the images in `assets/`.
+
+> **The sample configuration contains two deliberately broken cards.** The
+> bundled `config.xml` uses `https://github.com/user/project2` (a repository that
+> does not exist) and `overwrite@2` (no matching `<id>` in `overwrite.xml`) to
+> demonstrate the two failure states — they show how the site behaves when a repo
+> is misspelled or a manual entry is missing. That is intended, not a bug. Delete
+> them or point them at your own projects.
 
 > **Using manual entries?** Just fill them in `overwrite.xml` — `docker-compose.yml`
 > already mounts it into the container.
