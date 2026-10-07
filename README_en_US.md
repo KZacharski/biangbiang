@@ -250,21 +250,18 @@ Worth knowing:
 
 ### 1. Get the project
 
-Clone the latest stable release (the `v1.0.1` tag):
-
-```bash
-git clone --branch v1.0.1 https://github.com/xiaomianguan/biangbiang.git
-cd biangbiang
-```
-
-Prefer the **git development version** (tracking `main`)? Just drop the
-`--branch` argument. It carries the newest changes, but they have not been
-released yet and it may be unstable:
+Clone the repository, then check out the **latest stable release** (the newest
+release tag):
 
 ```bash
 git clone https://github.com/xiaomianguan/biangbiang.git
 cd biangbiang
+git checkout "$(git tag --sort=-v:refname | head -1)"   # the latest release tag
 ```
+
+> **Prefer the git development version (tracking `main`)?** Skip the final
+> `git checkout` and you stay on `main`. It carries the newest changes, but they
+> have not been released yet and it may be unstable.
 
 ### 2. Prepare the configuration and icons (optional — a working sample ships with the repo)
 
@@ -335,15 +332,18 @@ docker compose down             # stop and remove the container
 
 ### Updating to the latest version
 
-Stable releases are published as tags: fetch the tags, check out the version you
-want (swap `v1.0.1` for the newer one), then rebuild. Checking out a tag leaves
-you in a detached HEAD state, which makes no difference to a deployment.
+Stable releases are published as tags: fetch the tags, check out the newest
+release tag, then rebuild.
 
 ```bash
 git fetch --tags
-git checkout v1.0.1
+git checkout "$(git tag --sort=-v:refname | head -1)"   # the latest release tag
 docker compose up -d --build
 ```
+
+> Checking out a tag leaves you in a detached HEAD state, which makes no
+> difference to a deployment. To pin a specific version, replace `"$(...)"` with
+> a tag name such as `v1.0.1`.
 
 On the **git development version** (`main`), `git pull` is still what you want:
 
