@@ -5,6 +5,7 @@ const EMPTY_STATE = {
   title: 'Releases',
   sortable: false,
   accent: '#1677ff',
+  font: null,
   favicon: null,
   lastUpdated: null,
   lastChecked: null,

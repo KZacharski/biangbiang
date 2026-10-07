@@ -109,6 +109,7 @@ mkdir -p assets data
 <title>我的镜像站</title>
 <sortable>true</sortable>
 <accent>volcano</accent>
+<font>assets/MyFont.woff2</font>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -131,6 +132,7 @@ mkdir -p assets data
 | `<favicon>` | 根节点 | 否 | 用作站点 favicon 的 PNG/WEBP，**同时**是可安装 PWA 图标的生成源。缺省时使用内置的默认图标。 |
 | `<sortable>` | 根节点 | 否 | 只接受 `true` / `false`（大小写不敏感）。设为 `true` 时页头会出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认按名称（字母顺序）；`false`、写错或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>` | 根节点 | 否 | Ant Design [基础色板](https://ant.design/docs/spec/colors) 的色名，取 `red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta` 之一（大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或写成无法识别的值时一律回退为默认蓝色——不会报错，也不会让站点失去配色。 |
+| `<font>` | 根节点 | 否 | 字体文件路径（如 `assets/MyFont.woff2`），与 `<favicon>` 一样**相对于 `config.xml` 所在目录**解析。站点整体——包括 Ant Design 的按钮、标签、下拉框等组件——都会改用该字体，缺字形的字符仍由系统字体补足。省略、留空或文件不存在时保持系统默认字体。 |
 | `<project>` | 根节点（0..N） | — | 对应站点上的一张卡片。数量不限，自动按屏幕宽度排成 1 / 2 / 3 列，且每张卡片各自独立高度。 |
 | `<icon>` | `<project>` 内 | 否 | 卡片缩略图（PNG/WEBP）。缺省或图片加载失败时，卡片会显示项目名称的首字母。 |
 | `<name>` | `<project>` 内 | 否 | 显示名称。缺省时回退为仓库名。 |
@@ -521,6 +523,7 @@ curl -sI "https://mirror.example.com/dl/<owner>/<repo>/<version>/<file>" | head 
 - 主题切换器提供「跟随系统 / 浅色 / 深色」三档。
 - 若设置了 `<sortable>true</sortable>`，页头会出现排序下拉框（按名称 / 最近更新 / 文件最多 / 文件最少）。
 - 若设置了 `<accent>`（如 `<accent>volcano</accent>`），版本标签、「查看原仓库」链接等原本为蓝色的元素会变成该颜色；未设置时保持默认蓝色。
+- 若设置了 `<font>`（如 `<font>assets/MyFont.woff2</font>`），页面所有文字——含按钮、标签、下拉框等 Ant Design 组件——都会改用该字体；未设置或文件不存在时保持系统默认字体。
 - 页面已禁用双指缩放，整体不再能放大缩小，滚动与左右/上下滑动不受影响；浏览器菜单或系统辅助功能里的缩放仍然可用。
 
 ### 安装为 PWA

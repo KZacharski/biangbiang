@@ -124,6 +124,7 @@ you can edit it and restart without rebuilding the image.
 <title>My Mirror</title>
 <sortable>true</sortable>
 <accent>volcano</accent>
+<font>assets/MyFont.woff2</font>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -146,6 +147,7 @@ you can edit it and restart without rebuilding the image.
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
 | `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
 | `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values fall back to the default blue — never an error, and the site is never left uncoloured. |
+| `<font>` | root | no | Path to a font file (e.g. `assets/MyFont.woff2`), resolved **relative to the directory containing `config.xml`**, exactly like `<favicon>`. The whole site — including Ant Design buttons, tags and selects — switches to it, and any glyph the font lacks is still filled in by the system font. Omitted, empty, or a file that is not there leaves the system font in place. |
 | `<project>` | root (0..N) | — | One card on the site. Add as many as you like — they flow into 1 / 2 / 3 columns depending on the screen width, and every card is only as tall as its own content. |
 | `<icon>` | inside `<project>` | no | Card thumbnail (PNG/WEBP). If omitted or broken, the card shows the project's first letter instead. |
 | `<name>` | inside `<project>` | no | Display name. Falls back to the repository name. |
@@ -582,6 +584,9 @@ Then open `https://mirror.example.com` in a browser:
 - With `<accent>` set (e.g. `<accent>volcano</accent>`), the elements that were
   blue — the version tag, the "view original repo" link and so on — take that
   colour instead. Left unset, they stay the default blue.
+- With `<font>` set (e.g. `<font>assets/MyFont.woff2</font>`), all of the page's
+  text — Ant Design buttons, tags and selects included — uses that font. Left
+  unset, or pointed at a file that is not there, the system font stays in place.
 - Pinch-zoom is disabled, so the page no longer zooms as a whole. Scrolling and
   panning still work normally, and zoom from the browser menu or from system
   accessibility settings is unaffected.

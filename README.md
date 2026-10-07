@@ -23,6 +23,7 @@
 - **完全由配置驱动**：标题、favicon 以及各项目的图标/名称/仓库地址全部来自 `config.xml`；图标为使用者自行提供的 PNG/WEBP 文件。
 - **可选的项目排序**：把 `<sortable>` 设为 `true` 后，页头会出现排序下拉框，访客可按名称、最近更新、文件最多或文件最少重新排列卡片；设为 `false` 或省略时，卡片严格保持 `config.xml` 中的书写顺序。
 - **可配置主题色**：`<accent>` 填 Ant Design [基础色板](https://ant.design/docs/spec/colors) 中的色名（如 `volcano`、`purple`），站点即用该色替代默认的品牌蓝；省略或写错时保持默认蓝色。
+- **可配置字体**：`<font>` 填字体文件路径（如 `.woff2`），站点整体——含 Ant Design 组件——都会改用该字体；路径与 `<favicon>` 一样相对于 `config.xml` 所在目录解析，省略或指向不存在的文件时保持系统默认字体。
 - **浅色 / 深色主题**，默认「跟随系统」，可手动切换为浅色或深色。基于 Ant Design Vue 的设计令牌实现。
 - **可安装为 PWA**（manifest + Service Worker）——按设计**不提供离线缓存**。
 - **简体中文（zh-Hans）**界面，文案硬编码。
@@ -105,6 +106,7 @@ biangbiang/
 <title>Page title</title>
 <sortable>true</sortable>
 <accent>volcano</accent>
+<font>assets/MyFont.woff2</font>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -125,6 +127,7 @@ biangbiang/
 | `<favicon>`  | 根节点         | 可选。用作站点 favicon 的 PNG/WEBP 文件。 |
 | `<sortable>` | 根节点         | 可选。`true` 时页头出现排序下拉框，访客可按「按名称 / 最近更新 / 文件最多 / 文件最少」重新排列卡片，默认「按名称」（即字母顺序）；`false` 或省略时，卡片严格保持 `<project>` 的书写顺序。 |
 | `<accent>`   | 根节点         | 可选。Ant Design 基础色板名（`red` / `volcano` / `orange` / `gold` / `yellow` / `lime` / `green` / `cyan` / `blue` / `geekblue` / `purple` / `magenta`，大小写不敏感）。用该色替换站点默认的品牌蓝（Daybreak Blue）。省略、留空或填了无法识别的值时，一律回退为默认蓝色。 |
+| `<font>`     | 根节点         | 可选。字体文件路径（如 `assets/MyFont.woff2`），与 `<favicon>` 一样相对于 `config.xml` 所在目录解析。站点整体（含 Ant Design 组件）改用该字体。省略、留空或文件不存在时回退为系统默认字体。 |
 | `<project>`  | 根节点（0..N） | 每个项目一项 → 站点上的一张卡片。 |
 | `<icon>`    | 项目内         | 卡片图标所用的 PNG/WEBP 文件。可选。 |
 | `<name>`    | 项目内         | 项目显示名称。 |

@@ -63,6 +63,18 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
+/**
+ * True when `p` points at an existing regular file. Used to reject a `<font>`
+ * (or any other asset path) that does not actually resolve.
+ */
+function isFile(p) {
+  try {
+    return fs.statSync(p).isFile();
+  } catch {
+    return false;
+  }
+}
+
 const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
 
 /**
@@ -120,7 +132,7 @@ export function parseRepo(input) {
  * Load and normalize config.xml.
  *
  * @param {string} configPath absolute path to config.xml
- * @returns {{title:string, sortable:boolean, accent:string, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
+ * @returns {{title:string, sortable:boolean, accent:string, font:string|null, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
  */
 export function loadConfig(configPath) {
   const dir = path.dirname(configPath);
@@ -129,6 +141,7 @@ export function loadConfig(configPath) {
 
   const title = asText(root.title) || 'Releases';
   const faviconRel = normalizeRel(asText(root.favicon) || '');
+  const fontRel = normalizeRel(asText(root.font) || '');
 
   // `<sortable>true</sortable>` lets visitors re-sort the cards in the browser.
   // Left out (or false), the cards keep the order of the `<project>` entries.
@@ -198,10 +211,22 @@ export function loadConfig(configPath) {
     });
   });
 
+  // `<font>assets/MyFont.woff2</font>` swaps the site's typeface. The path is
+  // resolved exactly like `<favicon>` - relative to config.xml - and a tag that
+  // is missing, empty, or does not point at a real file inside that directory
+  // simply means "no custom font", so the site keeps its system font stack
+  // rather than asking the browser for a 404 on every load. The containment test
+  // mirrors the /media route's own, so a non-null font is always a URL that
+  // actually loads.
+  const fontPath = fontRel ? path.resolve(dir, fontRel) : null;
+  const fontInDir = !!fontPath && (fontPath === dir || fontPath.startsWith(dir + path.sep));
+  const font = fontInDir && isFile(fontPath) ? `/media/${fontRel}` : null;
+
   return {
     title,
     sortable,
     accent,
+    font,
     favicon: faviconRel ? `/media/${faviconRel}` : null,
     faviconPath: faviconRel ? path.resolve(dir, faviconRel) : null,
     projects,

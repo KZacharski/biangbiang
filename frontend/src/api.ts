@@ -27,6 +27,8 @@ export interface SiteState {
   sortable: boolean;
   /** Accent colour as a hex string, resolved from config.xml `<accent>`. */
   accent: string;
+  /** Font file URL from config.xml `<font>`, or null to use the system stack. */
+  font: string | null;
   favicon: string | null;
   lastUpdated: string | null;
   lastChecked: string | null;

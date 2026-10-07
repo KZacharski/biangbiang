@@ -2,6 +2,7 @@
 <title>测试镜像站点</title>
 <sortable>true</sortable>
 <accent>blue</accent>
+<font>assets/AlibabaPuHuiTi-3-55-Regular.woff2</font>
 <project>
     <icon>assets/icon1.png</icon>
     <name>Shizuku</name>
