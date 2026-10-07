@@ -49,6 +49,18 @@ const configDir = path.dirname(env.configPath);
 // are never served as media even though they sit next to the project icons.
 const configFileNames = new Set([path.basename(env.configPath), OVERWRITE_FILE]);
 
+// Icons are small and an operator may replace one in place, so they keep the
+// short cache that lets a change show up within minutes. A font is a different
+// story: it is measured in megabytes and it is effectively immutable, because
+// changing the typeface means pointing `<font>` at a different file, which is a
+// different URL. Re-fetching it every five minutes would cost far more than the
+// staleness is worth, so fonts get 30 days. Swapping the contents of the same
+// path is the one case that lingers; a rename or a cache-busting query clears
+// it immediately.
+const FONT_FILE_RE = /\.(woff2?|ttf|otf)$/i;
+const MEDIA_CACHE = 'public, max-age=300';
+const FONT_CACHE = 'public, max-age=2592000';
+
 app.get('/media/*', (req, res) => {
   let rel;
   try {
@@ -70,7 +82,7 @@ app.get('/media/*', (req, res) => {
   }
   if (!stat.isFile()) return res.status(404).end();
 
-  res.set('Cache-Control', 'public, max-age=300');
+  res.set('Cache-Control', FONT_FILE_RE.test(target) ? FONT_CACHE : MEDIA_CACHE);
   return res.sendFile(target);
 });
 
