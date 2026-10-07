@@ -4,6 +4,7 @@ import path from 'node:path';
 const EMPTY_STATE = {
   title: 'Releases',
   sortable: false,
+  accent: '#1677ff',
   favicon: null,
   lastUpdated: null,
   lastChecked: null,

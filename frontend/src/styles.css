@@ -7,6 +7,8 @@
   --rm-bg-container: #ffffff;
   --rm-border-secondary: #f0f0f0;
   --rm-text-secondary: rgba(0, 0, 0, 0.45);
+  /* Overridden at runtime from config.xml's <accent> tag. */
+  --rm-accent: #1677ff;
 }
 
 html[data-theme='dark'] {
@@ -153,7 +155,7 @@ body {
 }
 
 .rm-footer__credit a:hover {
-  color: #1677ff;
+  color: var(--rm-accent);
 }
 
 /* -------------------------------------------------------------- cards -- */
@@ -202,7 +204,7 @@ body {
 .rm-card__avatar-fallback {
   font-size: 20px;
   font-weight: 600;
-  color: #1677ff;
+  color: var(--rm-accent);
 }
 
 .rm-card__meta {

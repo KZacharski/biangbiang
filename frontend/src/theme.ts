@@ -4,7 +4,9 @@ import { theme as antdTheme } from 'ant-design-vue';
 export type ThemeMode = 'auto' | 'light' | 'dark';
 
 const STORAGE_KEY = 'biangbiang:theme';
-const BRAND = '#1677ff';
+
+/** Ant Design's Daybreak Blue - the accent until config.xml overrides it. */
+export const DEFAULT_ACCENT = '#1677ff';
 
 function systemPrefersDark(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -24,6 +26,7 @@ function readStoredMode(): ThemeMode {
 // --- shared singleton state (every caller observes the same theme) ----------
 
 const mode = ref<ThemeMode>(readStoredMode());
+const accent = ref(DEFAULT_ACCENT);
 const systemDark = ref(systemPrefersDark());
 
 if (typeof window !== 'undefined' && window.matchMedia) {
@@ -43,7 +46,12 @@ const isDark = computed(() => (mode.value === 'auto' ? systemDark.value : mode.v
 const themeConfig = computed(() => ({
   algorithm: isDark.value ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
   token: {
-    colorPrimary: BRAND,
+    // Ant Design keeps `colorInfo` (processing tags) and `colorLink` (link
+    // buttons) on their own seeds, so they need pointing at the accent too or
+    // they would stay Daybreak Blue while everything else changes.
+    colorPrimary: accent.value,
+    colorInfo: accent.value,
+    colorLink: accent.value,
     borderRadius: 8,
   },
 }));
@@ -54,12 +62,22 @@ watchEffect(() => {
   const dark = isDark.value;
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+  // The accent is configuration, not a preference, but styles.css needs it too.
+  document.documentElement.style.setProperty('--rm-accent', accent.value);
   try {
     localStorage.setItem(STORAGE_KEY, mode.value);
   } catch {
     /* ignore */
   }
 });
+
+/**
+ * Apply the accent colour resolved from config.xml (`<accent>`). Called with the
+ * value from /api/state once it arrives; an empty value leaves blue in place.
+ */
+export function setAccent(color: string | null | undefined): void {
+  if (color) accent.value = color;
+}
 
 export interface UseTheme {
   mode: Ref<ThemeMode>;

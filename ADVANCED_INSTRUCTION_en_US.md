@@ -123,6 +123,7 @@ you can edit it and restart without rebuilding the image.
 <favicon>assets/favicon.png</favicon>
 <title>My Mirror</title>
 <sortable>true</sortable>
+<accent>volcano</accent>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -144,6 +145,7 @@ you can edit it and restart without rebuilding the image.
 | `<title>` | root | no | Site title in the header and the browser tab. Falls back to `Releases`. |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
 | `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
+| `<accent>` | root | no | Name of an Ant Design [base palette](https://ant.design/docs/spec/colors): one of `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values fall back to the default blue — never an error, and the site is never left uncoloured. |
 | `<project>` | root (0..N) | — | One card on the site. Add as many as you like — they flow into 1 / 2 / 3 columns depending on the screen width, and every card is only as tall as its own content. |
 | `<icon>` | inside `<project>` | no | Card thumbnail (PNG/WEBP). If omitted or broken, the card shows the project's first letter instead. |
 | `<name>` | inside `<project>` | no | Display name. Falls back to the repository name. |
@@ -577,6 +579,9 @@ Then open `https://mirror.example.com` in a browser:
 - The theme switcher offers 跟随系统 / 浅色 / 深色 (system / light / dark).
 - With `<sortable>true</sortable>` set, a sort dropdown appears in the header
   (by name / last updated / most assets / least assets).
+- With `<accent>` set (e.g. `<accent>volcano</accent>`), the elements that were
+  blue — the version tag, the "view original repo" link and so on — take that
+  colour instead. Left unset, they stay the default blue.
 
 ### Installing as a PWA
 

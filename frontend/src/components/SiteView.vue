@@ -81,7 +81,7 @@ import ProjectCard from './ProjectCard.vue';
 import ThemeSwitcher from './ThemeSwitcher.vue';
 import { fetchState, formatDate, triggerRefresh, type Project, type SiteState } from '../api';
 import { REPO_URL, strings } from '../strings';
-import { useTheme } from '../theme';
+import { setAccent, useTheme } from '../theme';
 
 const { message } = App.useApp();
 const { mode } = useTheme();
@@ -144,7 +144,10 @@ const updatedText = computed(() => formatDate(state.value?.lastUpdated ?? null) 
 async function load() {
   loading.value = true;
   try {
-    state.value = await fetchState();
+    const next = await fetchState();
+    state.value = next;
+    // The accent lives in config.xml, so it can change between polls.
+    setAccent(next.accent);
     loadError.value = false;
   } catch {
     if (!state.value) loadError.value = true;

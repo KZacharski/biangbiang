@@ -25,6 +25,8 @@ export interface SiteState {
   title: string;
   /** Whether visitors may re-sort the cards (config.xml `<sortable>`). */
   sortable: boolean;
+  /** Accent colour as a hex string, resolved from config.xml `<accent>`. */
+  accent: string;
   favicon: string | null;
   lastUpdated: string | null;
   lastChecked: string | null;

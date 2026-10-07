@@ -245,6 +245,7 @@ export function createMirror({ configPath, releasesDir, store, concurrency = 4, 
       store.set({
         title: config.title,
         sortable: config.sortable,
+        accent: config.accent,
         favicon: config.favicon,
         lastUpdated: now,
         lastChecked: now,

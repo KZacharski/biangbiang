@@ -33,6 +33,10 @@ The whole project runs inside **a single Docker container**: one Node.js
   appears in the header, letting visitors re-order the cards by name, last
   updated, most assets or least assets. With `false` (or the tag omitted) the
   cards keep the exact order of `config.xml`.
+- **Configurable accent colour**: give `<accent>` the name of any colour in
+  Ant Design's [base palettes](https://ant.design/docs/spec/colors) — e.g.
+  `volcano` or `purple` — and the site uses it in place of the default brand
+  blue. Omit it (or misspell it) and the site stays blue.
 - **Light / dark theme**, defaulting to "follow system", with manual overrides.
   Implemented with Ant Design Vue design tokens.
 - **Installable as a PWA** (manifest + service worker) — with **no offline
@@ -125,6 +129,7 @@ alongside it or in the `assets/` subdirectory.
 <favicon>assets/favicon.png</favicon>
 <title>Page title</title>
 <sortable>true</sortable>
+<accent>volcano</accent>
 
 <project>
     <icon>assets/icon1.png</icon>
@@ -144,6 +149,7 @@ alongside it or in the `assets/` subdirectory.
 | `<title>`    | root         | Site title, shown in the header and the browser tab. |
 | `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
 | `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets — name (alphabetical) is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
+| `<accent>`   | root         | Optional. Name of an Ant Design base palette — `red`, `volcano`, `orange`, `gold`, `yellow`, `lime`, `green`, `cyan`, `blue`, `geekblue`, `purple` or `magenta` (case-insensitive). Replaces the site's default brand blue (Daybreak Blue). Omitted, empty or unrecognised values all fall back to the default blue. |
 | `<project>`  | root (0..N)  | One entry per project → one card on the site. |
 | `<icon>`    | inside a project | PNG/WEBP file used as the card icon. Optional. |
 | `<name>`    | inside a project | Project display name. |

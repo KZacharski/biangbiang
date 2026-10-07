@@ -32,6 +32,30 @@ function asBool(value, fallback) {
 }
 
 /**
+ * Ant Design's 12 base palettes, mapped to their primary (shade 5) colour.
+ * Taken from https://ant.design/docs/spec/colors - `<accent>` accepts one of
+ * these names. Note that `blue` is the v5 Daybreak Blue, which is what
+ * ant-design-vue renders by default.
+ */
+export const ACCENTS = {
+  red: '#f5222d',
+  volcano: '#fa541c',
+  orange: '#fa8c16',
+  gold: '#faad14',
+  yellow: '#fadb14',
+  lime: '#a0d911',
+  green: '#52c41a',
+  cyan: '#13c2c2',
+  blue: '#1677ff',
+  geekblue: '#2f54eb',
+  purple: '#722ed1',
+  magenta: '#eb2f96',
+};
+
+/** Ant Design's Daybreak Blue, used when `<accent>` is absent or unknown. */
+export const DEFAULT_ACCENT = ACCENTS.blue;
+
+/**
  * Always return an array, so any number of `<project>` nodes is handled.
  */
 function toArray(value) {
@@ -96,7 +120,7 @@ export function parseRepo(input) {
  * Load and normalize config.xml.
  *
  * @param {string} configPath absolute path to config.xml
- * @returns {{title:string, sortable:boolean, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
+ * @returns {{title:string, sortable:boolean, accent:string, favicon:string|null, faviconPath:string|null, projects:Array, dir:string}}
  */
 export function loadConfig(configPath) {
   const dir = path.dirname(configPath);
@@ -109,6 +133,14 @@ export function loadConfig(configPath) {
   // `<sortable>true</sortable>` lets visitors re-sort the cards in the browser.
   // Left out (or false), the cards keep the order of the `<project>` entries.
   const sortable = asBool(root.sortable, false);
+
+  // `<accent>volcano</accent>` replaces Ant Design's Daybreak Blue with another
+  // palette from https://ant.design/docs/spec/colors. An unknown name (or a
+  // missing tag) falls back to blue. `Object.hasOwn` is what makes that true for
+  // inherited keys too - a bare lookup would return the `Object` constructor for
+  // `<accent>constructor</accent>` and `Object.prototype` for `__proto__`.
+  const accentName = asText(root.accent).toLowerCase();
+  const accent = Object.hasOwn(ACCENTS, accentName) ? ACCENTS[accentName] : DEFAULT_ACCENT;
 
   const projects = [];
   const seen = new Set();
@@ -169,6 +201,7 @@ export function loadConfig(configPath) {
   return {
     title,
     sortable,
+    accent,
     favicon: faviconRel ? `/media/${faviconRel}` : null,
     faviconPath: faviconRel ? path.resolve(dir, faviconRel) : null,
     projects,
