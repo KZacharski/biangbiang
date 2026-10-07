@@ -143,7 +143,7 @@ alongside it or in the `assets/` subdirectory.
 |--------------|----------------|------|
 | `<title>`    | root         | Site title, shown in the header and the browser tab. |
 | `<favicon>`  | root         | Optional. PNG/WEBP file used as the site favicon. |
-| `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
+| `<sortable>` | root         | Optional. When `true`, a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets — name (alphabetical) is the default. When `false` (or omitted), the cards keep the exact order of the `<project>` entries. |
 | `<project>`  | root (0..N)  | One entry per project → one card on the site. |
 | `<icon>`    | inside a project | PNG/WEBP file used as the card icon. Optional. |
 | `<name>`    | inside a project | Project display name. |

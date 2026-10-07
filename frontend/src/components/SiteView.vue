@@ -99,6 +99,7 @@ const faviconBroken = ref(false);
 /** How the visitor ordered the cards. Only offered when `<sortable>` is on. */
 type SortKey = 'name' | 'updated' | 'mostAssets' | 'leastAssets';
 
+/** Alphabetical is the default the moment `<sortable>` is enabled. */
 const sortKey = ref<SortKey>('name');
 
 const sortOptions: { label: string; value: SortKey }[] = [

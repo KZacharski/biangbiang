@@ -143,7 +143,7 @@ you can edit it and restart without rebuilding the image.
 |---|---|---|---|
 | `<title>` | root | no | Site title in the header and the browser tab. Falls back to `Releases`. |
 | `<favicon>` | root | no | PNG/WEBP used as the site favicon **and** as the source for the installable PWA icons. Falls back to the bundled default icon. |
-| `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
+| `<sortable>` | root | no | Accepts `true` / `false` only (case-insensitive). With `true` a sort dropdown appears in the header and visitors can re-order the cards by name, last updated, most assets or least assets; name (alphabetical) is the default. With `false`, a typo, or the tag omitted, the cards keep the exact order of the `<project>` entries. |
 | `<project>` | root (0..N) | — | One card on the site. Add as many as you like — they flow into 1 / 2 / 3 columns depending on the screen width, and every card is only as tall as its own content. |
 | `<icon>` | inside `<project>` | no | Card thumbnail (PNG/WEBP). If omitted or broken, the card shows the project's first letter instead. |
 | `<name>` | inside `<project>` | no | Display name. Falls back to the repository name. |
