@@ -66,9 +66,18 @@
 
 ## 第一步 —— 把代码放到服务器上
 
+克隆最新的稳定版（`v1.0.1` 标签）：
+
 ```bash
 sudo mkdir -p /srv/biangbiang
 sudo chown "$USER":"$USER" /srv/biangbiang
+cd /srv/biangbiang
+git clone --branch v1.0.1 https://github.com/xiaomianguan/biangbiang.git .
+```
+
+想改用 **git 开发版**（跟踪 `main` 分支）？去掉 `--branch` 参数即可。开发版包含最新的改动，但尚未作为正式版本发布，可能不稳定：
+
+```bash
 cd /srv/biangbiang
 git clone https://github.com/xiaomianguan/biangbiang.git .
 ```
@@ -561,6 +570,17 @@ curl -X POST https://mirror.example.com/api/refresh
 ```
 
 ### 升级 biangbiang
+
+稳定版以标签形式发布：先取回标签，再切到目标版本（把 `v1.0.1` 换成新版本号），最后重建容器。检出标签后处于 detached HEAD 状态，这对部署没有影响。
+
+```bash
+cd /srv/biangbiang
+git fetch --tags
+git checkout v1.0.1
+docker compose up -d --build
+```
+
+如果部署的是 **git 开发版**（`main` 分支），改用 `git pull` 即可：
 
 ```bash
 cd /srv/biangbiang

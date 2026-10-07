@@ -72,9 +72,20 @@ State and artifacts live in a bind mount (`./data`), so `docker compose up
 
 ## Step 1 — Get the code onto the server
 
+Clone the latest stable release (the `v1.0.1` tag):
+
 ```bash
 sudo mkdir -p /srv/biangbiang
 sudo chown "$USER":"$USER" /srv/biangbiang
+cd /srv/biangbiang
+git clone --branch v1.0.1 https://github.com/xiaomianguan/biangbiang.git .
+```
+
+Prefer the **git development version** (tracking `main`)? Just drop the
+`--branch` argument. It carries the newest changes, but they have not been
+released yet and it may be unstable:
+
+```bash
 cd /srv/biangbiang
 git clone https://github.com/xiaomianguan/biangbiang.git .
 ```
@@ -647,6 +658,19 @@ curl -X POST https://mirror.example.com/api/refresh
 ```
 
 ### Update biangbiang
+
+Stable releases are published as tags: fetch the tags, check out the version you
+want (swap `v1.0.1` for the newer one), then rebuild. Checking out a tag leaves
+you in a detached HEAD state, which makes no difference to a deployment.
+
+```bash
+cd /srv/biangbiang
+git fetch --tags
+git checkout v1.0.1
+docker compose up -d --build
+```
+
+On the **git development version** (`main`), `git pull` is still what you want:
 
 ```bash
 cd /srv/biangbiang
