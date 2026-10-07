@@ -42,7 +42,7 @@
     └─────────┬─────────┘
               │  每 24 小时
               ▼
-        GitHub REST API  →  ./data/releases/<owner>/<repo>/<version>/<file>
+        GitHub REST API  →  ./data/releases/{owner}/{repo}/{version}/{file}
 ```
 
 一个容器同时提供 API、镜像后的构建产物**以及**打包好的 Vue 单页应用。数据与产物都存放在 bind mount（`./data`）中，因此执行 `docker compose up --build` 不会丢失任何数据。
@@ -97,7 +97,7 @@ mkdir -p data            # config.xml、overwrite.xml 与 assets/ 随仓库提�
 | 路径 | 用途 |
 |---|---|
 | `config.xml` | 站点配置（以只读方式挂载进容器）。 |
-| `overwrite.xml` | 手动条目（非 GitHub 项目），只读挂载。仅当 `config.xml` 里用到 `overwrite@<数字>` 时才会被读取。 |
+| `overwrite.xml` | 手动条目（非 GitHub 项目），只读挂载。仅当 `config.xml` 里用到 `overwrite@{数字}` 时才会被读取。 |
 | `assets/` | 你的 favicon 与各项目图标（只读挂载）。 |
 | `data/` | 镜像产物、`state.json`、生成的 PWA 图标与 manifest。**请务必备份。** |
 
@@ -180,7 +180,7 @@ user/project1
 
 ### 手动条目 —— 把任意位置的文件托管到站点上（overwrite.xml）
 
-`<repo>` 不一定要写 GitHub。写成 `overwrite@<数字>` 时，这张卡片的数据就改由与 `config.xml` 同目录的 `overwrite.xml` 提供：
+`<repo>` 不一定要写 GitHub。写成 `overwrite@{数字}` 时，这张卡片的数据就改由与 `config.xml` 同目录的 `overwrite.xml` 提供：
 
 ```xml
 <!-- config.xml -->
@@ -206,19 +206,19 @@ user/project1
 
 | 标签 | 说明 |
 |---|---|
-| `<id>` | 与 `overwrite@<数字>` 中的数字对应。 |
+| `<id>` | 与 `overwrite@{数字}` 中的数字对应。 |
 | `<version>` | 卡片上显示的版本号，代替自动获取的版本。可省略。 |
 | `<repo>` | 「查看原仓库」按钮指向的地址。可省略，省略时该按钮不显示。 |
 | `<downloads>/<file>` | 每个 `<file>` 对应一个下载按钮，直接指向该外部链接。 |
 
 行为说明：
 
-- **按需读取。** 只有当 `config.xml` 中至少存在一个 `overwrite@<数字>` 时才会读取 `overwrite.xml`；纯 GitHub 站点根本不会打开它，所以这个文件可以不存在。
+- **按需读取。** 只有当 `config.xml` 中至少存在一个 `overwrite@{数字}` 时才会读取 `overwrite.xml`；纯 GitHub 站点根本不会打开它，所以这个文件可以不存在。
 - **不下载任何东西。** 手动条目不会发起任何 HTTP 请求，也不会往 `./data` 写任何文件。下载按钮直接指向你填写的 URL，因此不占磁盘、也不受 GitHub 速率限制影响。
 - **不显示「发布于」日期。** 没有 Release，自然没有发布日期；文件大小同样未知，因此也不显示。
 - **可以随意混用。** GitHub 项目与手动条目能以任意组合共存。
 - **按钮上的文件名**取自链接 URL 的最后一段（`https://cdn.example.com/x/artifact3.zip` → `artifact3.zip`）。
-- **条目缺失不会拖垮站点。** 如果 `overwrite@<数字>` 找不到对应的 `<id>`，或者 `overwrite.xml` 整个不存在，只有那一张卡片会进入错误状态并输出一行日志，其他项目不受影响。
+- **条目缺失不会拖垮站点。** 如果 `overwrite@{数字}` 找不到对应的 `<id>`，或者 `overwrite.xml` 整个不存在，只有那一张卡片会进入错误状态并输出一行日志，其他项目不受影响。
 
 ### 挂载 overwrite.xml
 
@@ -233,7 +233,7 @@ user/project1
 
 每一轮镜像检查都会重新读取这个文件，所以改完宿主机上的内容后，点一下界面上的「立即检查更新」，或等下一次定时检查即可生效，**不需要**重新构建或重启容器。
 
-> **请保持文件存在。** 如果 `./overwrite.xml` 不存在，Docker 会把它建成一个空**目录**，所有 `overwrite@<数字>` 卡片都会以 `EISDIR` 报错。仓库里已经自带一份可直接使用的样例，新克隆的仓库不会遇到这个问题；若你删掉了它，用 `touch /srv/biangbiang/overwrite.xml` 重新建一个即可。
+> **请保持文件存在。** 如果 `./overwrite.xml` 不存在，Docker 会把它建成一个空**目录**，所有 `overwrite@{数字}` 卡片都会以 `EISDIR` 报错。仓库里已经自带一份可直接使用的样例，新克隆的仓库不会遇到这个问题；若你删掉了它，用 `touch /srv/biangbiang/overwrite.xml` 重新建一个即可。
 
 ---
 
@@ -523,7 +523,7 @@ curl -s https://mirror.example.com/api/health
 ss -tlnp | grep 8080        # 必须显示 127.0.0.1:8080，绝不能是 0.0.0.0:8080
 
 # 5. 镜像产物可以下载
-curl -sI "https://mirror.example.com/dl/<owner>/<repo>/<version>/<file>" | head -1
+curl -sI "https://mirror.example.com/dl/{owner}/{repo}/{version}/{file}" | head -1
 ```
 
 然后用浏览器打开 `https://mirror.example.com`，检查：
@@ -630,7 +630,7 @@ docker compose up -d --force-recreate
 |---|---|
 | 返回 `503 Frontend build not found.` | `PUBLIC_DIR` 下没有 `index.html`。不要覆盖 `PUBLIC_DIR`，SPA 已固化在镜像的 `/app/public`。 |
 | 所有卡片都显示「同步失败」且错误为 `404 Not Found` | `<repo>` 不存在或拼写错误；若是私有仓库，则令牌权限不足。 |
-| 日志出现 `overwrite.xml not found at /app/overwrite.xml` | 有项目用了 `overwrite@<数字>`，但该文件不存在。请创建 `./overwrite.xml`，见[挂载 overwrite.xml](#挂载-overwritexml)。 |
+| 日志出现 `overwrite.xml not found at /app/overwrite.xml` | 有项目用了 `overwrite@{数字}`，但该文件不存在。请创建 `./overwrite.xml`，见[挂载 overwrite.xml](#挂载-overwritexml)。 |
 | 某张卡片显示 `overwrite.xml has no <overwrite> block with <id>N</id>` | `overwrite@N` 中的数字在 `overwrite.xml` 里没有对应的 `<id>N</id>`。核对两个文件，或补上缺失的段落。 |
 | `overwrite.xml` 报 `EISDIR`／「是一个目录」 | 文件还不存在时就启用了挂载，Docker 把它建成了目录。执行 `rmdir ./overwrite.xml`，创建同名文件，再重建容器。 |
 | 手动条目的下载按钮 404 | `<file>` 链接写错或已失效——按钮直接指向该地址，biangbiang 不会去校验它。 |

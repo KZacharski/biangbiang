@@ -20,7 +20,7 @@
 - **排除源码归档**——GitHub 自动附加的 `Source code (zip)` / `Source code (tar.gz)` 永远不会被镜像。
 - **每 24 小时检查一次更新**（可配置），并且每个项目在磁盘上只保留最新版本。
 - **支持任意数量的项目**——`config.xml` 中每个 `<project>` 对应一张卡片。
-- **支持手动条目**——`<repo>` 写成 `overwrite@<数字>` 时，卡片数据改由 `overwrite.xml` 提供，从而把 GitHub 项目与任意外部下载链接混合在同一个站点里。
+- **支持手动条目**——`<repo>` 写成 `overwrite@{数字}` 时，卡片数据改由 `overwrite.xml` 提供，从而把 GitHub 项目与任意外部下载链接混合在同一个站点里。
 - **完全由配置驱动**：标题、favicon 以及各项目的图标/名称/仓库地址全部来自 `config.xml`；图标是普通的 PNG/WEBP 文件，仓库自带一套可直接使用、也可随意替换的样例。
 - **可选的项目排序**：把 `<sortable>` 设为 `true` 后，页头会出现排序下拉框，访客可按名称、最近更新、文件最多或文件最少重新排列卡片；设为 `false` 或省略时，卡片严格保持 `config.xml` 中的书写顺序。
 - **可配置主题色**：`<accent>` 填 Ant Design [基础色板](https://ant.design/docs/spec/colors) 中的色名（如 `volcano`、`purple`），站点即用该色替代默认的品牌蓝；省略或写错时保持默认蓝色。
@@ -44,13 +44,13 @@
                                 └──────────────┬───────────────┘
                                                │ 写入
                                                ▼
-                              data/releases/<owner>/<repo>/<version>/<file>
+                              data/releases/{owner}/{repo}/{version}/{file}
                                                │
    浏览器 ──► Express ─────────────────────────┘
                  ├─ /                  → 构建好的 Vue SPA（静态文件）
                  ├─ /api/state         → 实时 JSON：标题、项目、版本、构建产物
-                 ├─ /media/<path>      → 来自配置目录的 favicon 与项目图标
-                 └─ /dl/<owner>/<repo>/<version>/<file>  → 镜像后的构建产物
+                 ├─ /media/{path}      → 来自配置目录的 favicon 与项目图标
+                 └─ /dl/{owner}/{repo}/{version}/{file}  → 镜像后的构建产物
 ```
 
 前端是一个**静态打包产物**，但它渲染的数据是在运行时通过 `GET /api/state` 获取的。当有新的 Release 被镜像后，版本标签和下载按钮的集合会自动更新——**永远不需要重新构建前端**。页面还会定时刷新数据（并在标签页重新获得焦点时刷新），让长时间打开的页面保持最新。
@@ -149,7 +149,7 @@ user/project1
 
 ### 手动条目（overwrite.xml）
 
-`<repo>` 除了写 GitHub 地址，还可以写成 `overwrite@<数字>`。这样这张卡片的数据就不再来自 GitHub，而是来自与 `config.xml` **同目录**下的 `overwrite.xml`：
+`<repo>` 除了写 GitHub 地址，还可以写成 `overwrite@{数字}`。这样这张卡片的数据就不再来自 GitHub，而是来自与 `config.xml` **同目录**下的 `overwrite.xml`：
 
 ```xml
 <project>
@@ -175,14 +175,14 @@ user/project1
 
 | 标签                 | 说明 |
 |----------------------|------|
-| `<id>`               | 与 `config.xml` 中 `overwrite@<数字>` 的数字对应。 |
+| `<id>`               | 与 `config.xml` 中 `overwrite@{数字}` 的数字对应。 |
 | `<version>`          | 卡片上显示的版本号，代替自动获取的版本。可省略。 |
 | `<repo>`             | 「查看原仓库」按钮指向的地址。可省略，省略时该按钮不显示。 |
 | `<downloads>/<file>` | 每个 `<file>` 对应一个下载按钮，按钮直接指向该外部链接。 |
 
 要点：
 
-- **只有**当 `config.xml` 中至少存在一个 `overwrite@<数字>` 时才会去读取 `overwrite.xml`。如果所有 `<repo>` 都是 GitHub 地址，这个文件根本不会被打开。
+- **只有**当 `config.xml` 中至少存在一个 `overwrite@{数字}` 时才会去读取 `overwrite.xml`。如果所有 `<repo>` 都是 GitHub 地址，这个文件根本不会被打开。
 - 手动条目**不会**下载或缓存任何文件——下载按钮直接指向你填写的外部链接，因此不占用服务器磁盘，也不受 GitHub 速率限制影响。
 - 手动条目**不显示「发布于」日期**（没有 Release，自然没有发布日期）；文件大小同样无法得知，因此也不显示。
 - 同一个 `config.xml` 中可以随意混用 GitHub 项目与手动条目。
@@ -218,7 +218,7 @@ git checkout "$(git tag --sort=-v:refname | head -1)"   # 最新的 release 标�
 ```
 biangbiang/
 ├── config.xml
-├── overwrite.xml           # 手动条目：仅在用到 overwrite@<数字> 时需要
+├── overwrite.xml           # 手动条目：仅在用到 overwrite@{数字} 时需要
 └── assets/
     ├── favicon.png
     ├── icon1.png
@@ -343,8 +343,10 @@ cd frontend && npm run type-check
 | `GET`  | `/api/state`                            | 当前站点状态：标题、favicon、项目、版本与构建产物。 |
 | `GET`  | `/api/health`                           | 健康检查（存活探针）。 |
 | `POST` | `/api/refresh`                          | 立即触发一次镜像（页面上「立即检查更新」按钮使用）。 |
-| `GET`  | `/media/<path>`                         | 相对配置目录解析的 favicon / 项目图标。 |
-| `GET`  | `/dl/<owner>/<repo>/<version>/<file>`   | 下载镜像后的构建产物。 |
+| `GET`  | `/media/{path}`                         | 相对配置目录解析的 favicon / 项目图标。 |
+| `GET`  | `/dl/{owner}/{repo}/{version}/{file}`   | 下载镜像后的构建产物。 |
+
+> 上表中的 `{...}` 是占位符，实际请求时请替换为具体值（例如 `{owner}` 换成仓库所有者）。本文档中只有 XML 标签才写作 `<...>`。
 
 `GET /api/state` 返回示例：
 
@@ -391,7 +393,7 @@ cd frontend && npm run type-check
 | `pwa-maskable-512x512.png` | 512×512 | 图案缩放到 80%，背景填充为 favicon 的平均颜色 |
 | `apple-touch-icon.png` | 180×180 | 平铺到白色背景（iOS 不支持透明） |
 
-图标写入 `<DATA_DIR>/pwa/`，并通过 manifest 中声明的路径对外提供。每次启动时，后端还会在同一目录重新生成 `manifest.webmanifest`，把其中的 `name` / `short_name`（即安装后显示的应用名）替换为 `config.xml` 里的 `<title>`，其余字段（描述、配色、图标列表）沿用前端构建产物中的模板。因此修改 `<favicon>` 或 `<title>` 后重启容器，即可更新可安装图标与应用名。favicon 可以是 ImageMagick 能读取的任意格式（PNG、WEBP 等）。若未配置 `<favicon>`，或系统中没有 ImageMagick，则会改用 `frontend/public/` 中自带的默认图标；若 manifest 模板读取失败，则同样回退到自带的默认 manifest。
+图标写入 `{DATA_DIR}/pwa/`，并通过 manifest 中声明的路径对外提供。每次启动时，后端还会在同一目录重新生成 `manifest.webmanifest`，把其中的 `name` / `short_name`（即安装后显示的应用名）替换为 `config.xml` 里的 `<title>`，其余字段（描述、配色、图标列表）沿用前端构建产物中的模板。因此修改 `<favicon>` 或 `<title>` 后重启容器，即可更新可安装图标与应用名。favicon 可以是 ImageMagick 能读取的任意格式（PNG、WEBP 等）。若未配置 `<favicon>`，或系统中没有 ImageMagick，则会改用 `frontend/public/` 中自带的默认图标；若 manifest 模板读取失败，则同样回退到自带的默认 manifest。
 
 Docker 镜像中已安装 ImageMagick。本地开发时请自行安装（`brew install imagemagick`、`apt install imagemagick` 等）。
 

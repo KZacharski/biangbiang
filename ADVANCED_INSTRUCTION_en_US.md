@@ -45,7 +45,7 @@ path.
     └─────────┬─────────┘
               │  every 24 h
               ▼
-        GitHub REST API  →  ./data/releases/<owner>/<repo>/<version>/<file>
+        GitHub REST API  →  ./data/releases/{owner}/{repo}/{version}/{file}
 ```
 
 One container serves the API, the mirrored artifacts **and** the built Vue SPA.
@@ -113,7 +113,7 @@ Four paths matter from here on:
 | Path | Purpose |
 |---|---|
 | `config.xml` | Your site configuration (mounted read-only). |
-| `overwrite.xml` | Manual (non-GitHub) projects, mounted read-only. Only read if `config.xml` uses `overwrite@<number>`. |
+| `overwrite.xml` | Manual (non-GitHub) projects, mounted read-only. Only read if `config.xml` uses `overwrite@{number}`. |
 | `assets/` | Your favicon + project icons (mounted read-only). |
 | `data/` | Mirrored artifacts, `state.json`, generated PWA icons and manifest. **Back this up.** |
 
@@ -212,7 +212,7 @@ layout is to keep everything under `assets/`.
 
 ### Manual entries — hosting files from anywhere (`overwrite.xml`)
 
-A `<repo>` does not have to be GitHub. Write `overwrite@<number>` and that card
+A `<repo>` does not have to be GitHub. Write `overwrite@{number}` and that card
 is filled in from `overwrite.xml`, which sits next to `config.xml`:
 
 ```xml
@@ -239,7 +239,7 @@ is filled in from `overwrite.xml`, which sits next to `config.xml`:
 
 | Tag | Description |
 |---|---|
-| `<id>` | Matches the number in `overwrite@<number>`. |
+| `<id>` | Matches the number in `overwrite@{number}`. |
 | `<version>` | Version shown on the card, in place of an auto-fetched one. Optional. |
 | `<repo>` | URL the "view original repo" button links to. Optional — the button is hidden when omitted. |
 | `<downloads>/<file>` | One download button per `<file>`, linking directly to that external URL. |
@@ -247,7 +247,7 @@ is filled in from `overwrite.xml`, which sits next to `config.xml`:
 Behaviour:
 
 - **Lazy loading.** `overwrite.xml` is read only when at least one
-  `overwrite@<number>` exists in `config.xml`. A GitHub-only site never opens
+  `overwrite@{number}` exists in `config.xml`. A GitHub-only site never opens
   it, so the file may simply be absent.
 - **Nothing is downloaded.** Manual entries issue no HTTP requests and write
   nothing to `./data`. The download buttons link straight to your URLs, so
@@ -258,7 +258,7 @@ Behaviour:
   combination.
 - **Button labels** are the last path segment of each URL
   (`https://cdn.example.com/x/artifact3.zip` → `artifact3.zip`).
-- **Missing entries are non-fatal.** An `overwrite@<number>` with no matching
+- **Missing entries are non-fatal.** An `overwrite@{number}` with no matching
   `<id>`, or a missing `overwrite.xml`, puts only that card into an error state
   and logs one line; every other project is unaffected.
 
@@ -279,7 +279,7 @@ host is enough: press 立即检查更新 in the UI, or wait for the next schedul
 check. No rebuild or restart is required.
 
 > **Keep the file present.** If `./overwrite.xml` does not exist, Docker creates
-> an empty *directory* at that path instead, and every `overwrite@<number>` card
+> an empty *directory* at that path instead, and every `overwrite@{number}` card
 > fails with `EISDIR`. A fresh clone already ships a working starting point; if
 > you deleted it, recreate it with `touch /srv/biangbiang/overwrite.xml`.
 
@@ -602,7 +602,7 @@ curl -s https://mirror.example.com/api/health
 ss -tlnp | grep 8080        # must show 127.0.0.1:8080, never 0.0.0.0:8080
 
 # 5. A mirrored artifact downloads
-curl -sI "https://mirror.example.com/dl/<owner>/<repo>/<version>/<file>" | head -1
+curl -sI "https://mirror.example.com/dl/{owner}/{repo}/{version}/{file}" | head -1
 ```
 
 Then open `https://mirror.example.com` in a browser:
@@ -735,7 +735,7 @@ i.e. 3 minutes) and recreate the container.
 |---|---|
 | `503 Frontend build not found.` | `PUBLIC_DIR` doesn't contain `index.html`. Don't override `PUBLIC_DIR`; the SPA is baked into the image at `/app/public`. |
 | Every card says "同步失败" with `404 Not Found` | The `<repo>` doesn't exist or is misspelled — or the token lacks access to a private repo. |
-| `overwrite.xml not found at /app/overwrite.xml` in the logs | A project uses `overwrite@<number>` but the file is missing. Create `./overwrite.xml` — see [Mounting `overwrite.xml`](#mounting-overwritexml). |
+| `overwrite.xml not found at /app/overwrite.xml` in the logs | A project uses `overwrite@{number}` but the file is missing. Create `./overwrite.xml` — see [Mounting `overwrite.xml`](#mounting-overwritexml). |
 | One card says `overwrite.xml has no <overwrite> block with <id>N</id>` | The number in `overwrite@N` has no matching `<id>N</id>`. Check both files, or add the missing block. |
 | `EISDIR` / "is a directory" for `overwrite.xml` | The mount was enabled before the file existed, so Docker created a directory. `rmdir ./overwrite.xml`, create the file, recreate the container. |
 | Manual download button 404s | The `<file>` URL is wrong or no longer reachable — the button links straight to it, so it is never validated by biangbiang. |

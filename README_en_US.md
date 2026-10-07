@@ -30,7 +30,7 @@ The whole project runs inside **a single Docker container**: one Node.js
 - **Checks for updates every 24 hours** (configurable), and keeps only the latest
   version of each project on disk.
 - **Any number of projects** — one `<project>` in `config.xml` becomes one card.
-- **Manual entries** — writing `<repo>overwrite@<number></repo>` sources that card from `overwrite.xml` instead, so GitHub projects and arbitrary external download links can be mixed on one site.
+- **Manual entries** — writing `<repo>overwrite@{number}</repo>` sources that card from `overwrite.xml` instead, so GitHub projects and arbitrary external download links can be mixed on one site.
 - **Fully configuration-driven**: title, favicon, and each project's
   icon/name/repository all come from `config.xml`; icons are ordinary PNG/WEBP
   files, and the repo ships a ready-to-use sample set you can swap out freely.
@@ -75,13 +75,13 @@ The whole project runs inside **a single Docker container**: one Node.js
                                     └──────────────┬───────────────┘
                                                    │ write
                                                    ▼
-                                  data/releases/<owner>/<repo>/<version>/<file>
+                                  data/releases/{owner}/{repo}/{version}/{file}
                                                    │
     browser ──► Express ───────────────────────────┘
                   ├─ /                  → built Vue SPA (static files)
                   ├─ /api/state         → live JSON: title, projects, versions, artifacts
-                  ├─ /media/<path>      → favicon and project icons from the config directory
-                  └─ /dl/<owner>/<repo>/<version>/<file>  → mirrored build artifacts
+                  ├─ /media/{path}      → favicon and project icons from the config directory
+                  └─ /dl/{owner}/{repo}/{version}/{file}  → mirrored build artifacts
 ```
 
 The frontend is a **static bundle**, but the data it renders is fetched at
@@ -188,7 +188,7 @@ without affecting the others.
 
 ### Manual entries (`overwrite.xml`)
 
-A `<repo>` can also be written as `overwrite@<number>`. That card's data then
+A `<repo>` can also be written as `overwrite@{number}`. That card's data then
 comes from an `overwrite.xml` file sitting **next to `config.xml`** instead of
 from GitHub:
 
@@ -216,14 +216,14 @@ The structure of `overwrite.xml`:
 
 | Tag | Description |
 |---|---|
-| `<id>` | Matches the number in `overwrite@<number>` in `config.xml`. |
+| `<id>` | Matches the number in `overwrite@{number}` in `config.xml`. |
 | `<version>` | Version shown on the card, instead of an auto-fetched one. Optional. |
 | `<repo>` | URL the "view original repo" button links to. Optional — the button is hidden when it is omitted. |
 | `<downloads>/<file>` | One download button per `<file>`, linking straight to that external URL. |
 
 Worth knowing:
 
-- `overwrite.xml` is read **only** when at least one `overwrite@<number>` exists in `config.xml`. If every `<repo>` is a GitHub URL, the file is never opened.
+- `overwrite.xml` is read **only** when at least one `overwrite@{number}` exists in `config.xml`. If every `<repo>` is a GitHub URL, the file is never opened.
 - Manual entries **download and cache nothing** — the download buttons point straight at the URLs you supply, so they use no server disk space and are unaffected by GitHub rate limits.
 - Manual entries **show no "released at" date** (there is no release to date) and no file size (it is unknown).
 - GitHub projects and manual entries can be mixed freely within one `config.xml`.
@@ -268,7 +268,7 @@ git checkout "$(git tag --sort=-v:refname | head -1)"   # the latest release tag
 ```
 biangbiang/
 ├── config.xml
-├── overwrite.xml           # manual entries: only needed for overwrite@<number>
+├── overwrite.xml           # manual entries: only needed for overwrite@{number}
 └── assets/
     ├── favicon.png
     ├── icon1.png
@@ -412,8 +412,12 @@ All of these can be set in the `environment` block of `docker-compose.yml`.
 | `GET`  | `/api/state`                            | Current site state: title, favicon, projects, versions, artifacts. |
 | `GET`  | `/api/health`                           | Health check (liveness probe). |
 | `POST` | `/api/refresh`                          | Trigger a mirror run immediately (used by the "check for updates" button). |
-| `GET`  | `/media/<path>`                         | Favicon / project icons, resolved relative to the config directory. |
-| `GET`  | `/dl/<owner>/<repo>/<version>/<file>`   | Download a mirrored build artifact. |
+| `GET`  | `/media/{path}`                         | Favicon / project icons, resolved relative to the config directory. |
+| `GET`  | `/dl/{owner}/{repo}/{version}/{file}`   | Download a mirrored build artifact. |
+
+> The `{...}` segments above are placeholders — substitute real values in an
+> actual request (e.g. `{owner}` becomes the repository owner). Throughout these
+> docs, `<...>` is used only for XML tags.
 
 Example `GET /api/state` response:
 
@@ -471,7 +475,7 @@ icon set from the favicon with ImageMagick:
 | `pwa-maskable-512x512.png` | 512×512 | Logo scaled to 80%, background filled with the favicon's average colour |
 | `apple-touch-icon.png` | 180×180 | Flattened onto a white background (iOS does not support transparency) |
 
-The icons are written to `<DATA_DIR>/pwa/` and served at the paths declared in
+The icons are written to `{DATA_DIR}/pwa/` and served at the paths declared in
 the manifest. On every startup the backend also regenerates
 `manifest.webmanifest` in the same directory, replacing its `name` / `short_name`
 (the name shown for the installed app) with the `<title>` from `config.xml`;
