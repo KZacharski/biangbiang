@@ -176,6 +176,20 @@ body {
   }
 }
 
+/* Applied by masonry.ts when it takes over the layout in a browser without Grid
+   Lanes. The cards are positioned with transforms, so the grid only has to keep
+   supplying the lane widths - masonry.ts reads those back off it. Without this
+   class nothing changes, so a failure there simply leaves the plain grid. */
+.rm-grid--measured {
+  position: relative;
+}
+
+.rm-grid--measured > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .rm-footer {
   border-top: 1px solid var(--rm-border-secondary);
   padding: 16px;

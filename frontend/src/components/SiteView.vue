@@ -52,7 +52,7 @@
 
       <a-empty v-else-if="projects.length === 0" :description="strings.noProjects" />
 
-      <div v-else class="rm-grid">
+      <div v-else ref="gridRef" class="rm-grid">
         <project-card v-for="project in projects" :key="project.id" :project="project" />
       </div>
     </main>
@@ -80,6 +80,7 @@ import { GithubOutlined, ReloadOutlined } from '@ant-design/icons-vue';
 import ProjectCard from './ProjectCard.vue';
 import ThemeSwitcher from './ThemeSwitcher.vue';
 import { fetchState, formatDate, triggerRefresh, type Project, type SiteState } from '../api';
+import { layoutCards } from '../masonry';
 import { REPO_URL, strings } from '../strings';
 import { setAccent, setFont, useTheme } from '../theme';
 
@@ -95,6 +96,7 @@ const hasLoadedOnce = ref(false);
 const loadError = ref(false);
 const refreshing = ref(false);
 const faviconBroken = ref(false);
+const gridRef = ref<HTMLElement | null>(null);
 
 /** How the visitor ordered the cards. Only offered when `<sortable>` is on. */
 type SortKey = 'name' | 'updated' | 'mostAssets' | 'leastAssets';
@@ -188,6 +190,47 @@ watch(
   { immediate: true },
 );
 
+/**
+ * Grid Lanes takes the row alignment out of the card grid, so a short card no
+ * longer leaves a gap under it - but only Safari has shipped it. See masonry.ts,
+ * which places the cards by hand in every other browser. Running on the
+ * post-flush tick means the row-aligned grid is never painted first.
+ *
+ * Coalesced into one animation frame, because dragging a window fires `resize`
+ * far faster than the layout needs to keep up with and every run forces a reflow.
+ */
+let pendingFrame = 0;
+
+function relayout() {
+  if (pendingFrame) return;
+  pendingFrame = window.requestAnimationFrame(() => {
+    pendingFrame = 0;
+    layoutCards(gridRef.value);
+  });
+}
+
+/**
+ * A card grows when the poll brings in new data, and the grid changes width when
+ * a scrollbar appears or a web font lands - neither of which fires `resize`.
+ * Watching the boxes covers both.
+ */
+const boxWatcher =
+  typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => relayout());
+
+watch(
+  projects,
+  () => {
+    // The grid element is recreated whenever the card list goes empty and back.
+    boxWatcher?.disconnect();
+    if (gridRef.value) {
+      boxWatcher?.observe(gridRef.value);
+      for (const card of Array.from(gridRef.value.children)) boxWatcher?.observe(card);
+    }
+    relayout();
+  },
+  { flush: 'post', immediate: true },
+);
+
 let timer: number | undefined;
 
 function onVisible() {
@@ -201,12 +244,21 @@ onMounted(() => {
   timer = window.setInterval(() => void load(), 5 * 60 * 1000);
   document.addEventListener('visibilitychange', onVisible);
   window.addEventListener('focus', onVisible);
+  // A width change moves the cards between lanes, and a font from config.xml
+  // changes how tall they are once it has loaded.
+  window.addEventListener('resize', relayout);
+  document.fonts?.addEventListener('loadingdone', relayout);
+  void document.fonts?.ready.then(relayout);
 });
 
 onUnmounted(() => {
   if (timer) window.clearInterval(timer);
+  if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+  boxWatcher?.disconnect();
   document.removeEventListener('visibilitychange', onVisible);
   window.removeEventListener('focus', onVisible);
+  window.removeEventListener('resize', relayout);
+  document.fonts?.removeEventListener('loadingdone', relayout);
 });
 </script>
 
